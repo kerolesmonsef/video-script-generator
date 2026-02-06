@@ -84,11 +84,6 @@
   margin: 0;
 }
 
-.title-section {
-  background: linear-gradient(135deg, #f0f4ff 0%, #e0e8ff 100%);
-  border-right-color: #667eea;
-}
-
 .visual-section {
   background: linear-gradient(135deg, #fff5e6 0%, #ffe0b3 100%);
   border-right-color: #ff9900;

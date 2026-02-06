@@ -8,8 +8,6 @@ const ScriptCard = ({ script, index }) => {
 
   const handleCopy = () => {
     const textToCopy = `
-العنوان: ${script.title}
-
 الوصف المرئي: ${script.visualDescription}
 
 النص الصوتي: ${script.voiceText}
@@ -56,11 +54,6 @@ Image Prompt: ${script.imagePrompt || ''}
       </div>
 
       <div className="script-card-body">
-        <div className="script-section title-section">
-          <h4>📌 العنوان</h4>
-          <p>{script.title}</p>
-        </div>
-
         <div className="script-section visual-section">
           <h4>🎬 الوصف المرئي (للذكاء الاصطناعي)</h4>
           <p>{script.visualDescription}</p>

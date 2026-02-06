@@ -20,10 +20,6 @@ const SCRIPT_SCHEMA = {
                 items: {
                     type: "object",
                     properties: {
-                        title: {
-                            type: "string",
-                            description: "عنوان السيناريو باللغة العربية"
-                        },
                         visualDescription: {
                             type: "string",
                             description: "وصف بصري مفصل للغاية باللغة العربية لمولد الفيديو بالذكاء الاصطناعي. يجب أن يكون مناسبًا لفيديو مدته 5 ثوانٍ بالضبط"
@@ -41,7 +37,7 @@ const SCRIPT_SCHEMA = {
                             description: "سلبية رئيسية واحدة للموضوع باللغة العربية"
                         }
                     },
-                    required: ["title", "visualDescription", "voiceText", "benefit", "drawback"]
+                    required: ["visualDescription", "voiceText", "benefit", "drawback"]
                 }
             }
         },
@@ -76,31 +72,32 @@ export const generateScripts = async (idea, numberOfScripts, model = OPENROUTER_
 Task: Generate ${numberOfScripts} unique video ideas based on the topic: "${idea}".
 
 For each idea, you must provide two things:
-1.  **The Video Script (in Arabic):**
-    * **Duration:** 5-6 seconds max (Super Short).
-    * **Tone:** Friendly, energetic, authentic "Spoken Arabic" (عامية/لهجة بيضاء).
-    * **POV:** First-person ("I"), speaking directly to the camera.
+1.  **The Video Script (in Egyptian Arabic):**
+    * **Duration:** STRICTLY 5 seconds max (Micro-content).
+    * **Language:** Authentic Egyptian Slang (عامية مصرية).
+    * **Content Strategy:** The script must be a SINGLE, punchy sentence. It must offer a direct "Golden Tip" OR a "Warning against a specific harm" related to the topic. No intros, no outros, just the core value.
+    * **Voice Personality:** Define the specific vocal style suitable for the character (e.g., "Squeaky & Funny", "Deep & Wise", "Fast & Panic-stricken").
 
-2. The Image Generation Prompt (in English):
-    * Goal: A single, powerful image prompt to generate the main visual for this video.
-    * Style: Pixar/Disney 3D animation style. Cute, high-quality render, charming, cinematic lighting.
-    * Subject: Focus on a single central inanimate object (جماد) related to the script topic, making it look appealing and character-like, without actual human characters if possible.
-    * Environment / Background: Place the object in a cartoon-realistic, visually rich, and thematically relevant environment, explicitly avoiding plain, white, or studio backgrounds. The background should match the Pixar/Disney CGI style, include environmental depth and subtle props, use soft depth of field or slight blur, warm cinematic lighting, and balanced colors. The environment can be a kitchen, desk, street, natural setting, or any context related to the topic, enhancing the scene while keeping the object as the clear focal point.
+2.  **The Image Generation Prompt (in English):**
+    * **Goal:** Generate a single, powerful, and visually captivating 3D masterpiece to serve as the main visual for a high-engagement social media video.
+    * **Style:** High-end Pixar/Disney 3D animation style, rendered with Octane Render for ultra-photorealistic textures. Charming and appealing character-like appearance, 8k resolution, vibrant balanced colors, and cinematic high-fidelity detail.
+    * **Subject:** A single, central, anthropomorphic inanimate object (جماد) with an incredibly expressive face. Featuring large, glossy, sparkling eyes and a charming mouth with a clear emotional expression. The object should have realistic material textures (glossy finish, subsurface scattering) making it look tangible and "alive".
+    * **Environment:** A visually rich, cartoon-realistic environment related to the topic. Use dramatic cinematic lighting (strong key light, warm fill, distinct rim light) to create depth. Use a shallow depth of field (bokeh blur) to keep focus on the character.
 
 Output must be in this exact JSON format:
 {
   "scripts": [
     {
-      "title": "Catchy Title (Arabic)",
       "visualDescription": "Brief visual scene description for the editor (Arabic)",
-      "voiceText": "The spoken script (Spoken Arabic)",
+      "voiceTone": "Specific voice acting instruction (e.g., High-pitched, Deep, Fast) (Arabic)",
+      "voiceText": "The spoken script (Egyptian Arabic - 5s max)",
       "imagePrompt": "Detailed English prompt for Midjourney/DALL-E depicting a Pixar-style inanimate object related to the script.",
-      "benefit": "One clear benefit (Arabic)",
-      "drawback": "One potential twist/drawback (Arabic)"
+      "benefit": "One clear benefit of this tip (Arabic)",
+      "drawback": "One potential risk if ignored (Arabic)"
     }
   ]
 }
-IMPORTANT: Ensure 'voiceText' is in ARABIC. Ensure 'imagePrompt' is in ENGLISH and strictly follows the Pixar 3D object style guidelines.`;
+IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in ENGLISH and strictly follows the Pixar 3D object style guidelines.`;
 
         console.log('🚀 Calling OpenRouter API with model:', model);
 
@@ -193,9 +190,6 @@ IMPORTANT: Ensure 'voiceText' is in ARABIC. Ensure 'imagePrompt' is in ENGLISH a
             };
 
             const normalized = {
-                title: findValue(script, [
-                    'title', 'Title', 'عنوان', 'العنوان', 'name', 'Name'
-                ]),
                 visualDescription: findValue(script, [
                     'visualDescription', 'visual_description', 'VisualDescription',
                     'description', 'Description', 'الوصف_البصري', 'وصف_بصري',
@@ -225,7 +219,6 @@ IMPORTANT: Ensure 'voiceText' is in ARABIC. Ensure 'imagePrompt' is in ENGLISH a
             console.log('📝 Normalized script:', normalized);
             return normalized;
         }).filter(script =>
-            script.title &&
             script.visualDescription &&
             script.voiceText &&
             script.benefit &&

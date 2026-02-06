@@ -1,7 +1,7 @@
 
 
 export const OPENROUTER_CONFIG = {
-  apiKey: "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", // Get from https://openrouter.ai/keys
+  apiKey: "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", // Get from https://openrouter.ai/keys
   apiUrl: "https://openrouter.ai/api/v1/chat/completions",
   defaultModel: "arcee-ai/trinity-large-preview:free", // Recommended for Arabic
 
