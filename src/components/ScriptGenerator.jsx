@@ -7,7 +7,7 @@ import './ScriptGenerator.css';
 
 const ScriptGenerator = ({ onScriptsGenerated }) => {
   const [idea, setIdea] = useState('');
-  const [numberOfScripts, setNumberOfScripts] = useState(3);
+  const [numberOfScripts, setNumberOfScripts] = useState(1);
   const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -54,7 +54,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="generator-form">
-        {/* Video Idea Input */}
         <div className="form-group">
           <label htmlFor="idea">
             <FaLightbulb /> فكرة الفيديو
@@ -71,7 +70,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
         </div>
 
         <div className="form-row">
-          {/* Number of Scripts Input */}
           <div className="form-group">
             <label htmlFor="numberOfScripts">
               <FaHashtag /> عدد السكريبتات
@@ -89,7 +87,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
             <small>من 1 إلى 10 سكريبتات</small>
           </div>
 
-          {/* AI Model Selector */}
           <div className="form-group">
             <label htmlFor="model">
               <FaRobot /> نموذج الذكاء الاصطناعي
@@ -117,7 +114,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
           </div>
         )}
 
-        {/* Submit Button */}
         <button
           type="submit"
           className="generate-button"
@@ -136,7 +132,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
         </button>
       </form>
 
-      {/* Usage Tips */}
       {!loading && (
         <div className="usage-tips">
           <h4>💡 نصائح للحصول على أفضل النتائج:</h4>

@@ -1,13 +1,11 @@
-// ScriptCard Component - Displays individual script in a beautiful card
 import React, { useState } from 'react';
-import { FaCopy, FaCheck, FaClock } from 'react-icons/fa';
-import { SiYoutube, SiTiktok } from 'react-icons/si';
+import { FaCopy, FaCheck, FaClock, FaImage } from 'react-icons/fa';
 import './ScriptCard.css';
 
 const ScriptCard = ({ script, index }) => {
   const [copied, setCopied] = useState(false);
+  const [imageCopied, setImageCopied] = useState(false);
 
-  // Copy script content to clipboard
   const handleCopy = () => {
     const textToCopy = `
 العنوان: ${script.title}
@@ -15,6 +13,8 @@ const ScriptCard = ({ script, index }) => {
 الوصف المرئي: ${script.visualDescription}
 
 النص الصوتي: ${script.voiceText}
+
+Image Prompt: ${script.imagePrompt || ''}
 
 الفائدة: ${script.benefit}
 
@@ -32,6 +32,20 @@ const ScriptCard = ({ script, index }) => {
       });
   };
 
+  const handleCopyImagePrompt = () => {
+    if (!script.imagePrompt) return;
+
+    navigator.clipboard.writeText(script.imagePrompt)
+      .then(() => {
+        setImageCopied(true);
+        setTimeout(() => setImageCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy:', err);
+        alert('فشل النسخ');
+      });
+  };
+
   return (
     <div className="script-card">
       <div className="script-card-header">
@@ -42,25 +56,36 @@ const ScriptCard = ({ script, index }) => {
       </div>
 
       <div className="script-card-body">
-        {/* Title Section */}
         <div className="script-section title-section">
           <h4>📌 العنوان</h4>
           <p>{script.title}</p>
         </div>
 
-        {/* Visual Description Section */}
         <div className="script-section visual-section">
           <h4>🎬 الوصف المرئي (للذكاء الاصطناعي)</h4>
           <p>{script.visualDescription}</p>
         </div>
 
-        {/* Voice Text Section */}
         <div className="script-section voice-section">
           <h4>🎤 النص الصوتي</h4>
           <p>{script.voiceText}</p>
         </div>
 
-        {/* Benefits and Drawbacks */}
+        {script.imagePrompt && (
+          <div className="script-section image-prompt-section">
+            <div className="image-prompt-header">
+              <h4><FaImage /> Image Prompt</h4>
+              <button
+                className={`copy-image-prompt ${imageCopied ? 'copied' : ''}`}
+                onClick={handleCopyImagePrompt}
+              >
+                {imageCopied ? <FaCheck /> : <FaCopy />}
+              </button>
+            </div>
+            <p className="image-prompt-text">{script.imagePrompt}</p>
+          </div>
+        )}
+
         <div className="benefits-drawbacks">
           <div className="benefit-box">
             <h4>✅ الفائدة</h4>
@@ -72,18 +97,8 @@ const ScriptCard = ({ script, index }) => {
           </div>
         </div>
 
-        {/* Platform Badges */}
-        <div className="platform-badges">
-          <span className="platform-badge youtube">
-            <SiYoutube /> YouTube Shorts
-          </span>
-          <span className="platform-badge tiktok">
-            <SiTiktok /> TikTok
-          </span>
-        </div>
       </div>
 
-      {/* Copy Button */}
       <button
         className={`copy-button ${copied ? 'copied' : ''}`}
         onClick={handleCopy}
