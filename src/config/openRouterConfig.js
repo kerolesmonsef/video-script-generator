@@ -2,7 +2,7 @@
 // IMPORTANT: Replace YOUR_OPENROUTER_API_KEY with your actual API key from https://openrouter.ai/
 
 export const OPENROUTER_CONFIG = {
-  apiKey: "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", // Get from https://openrouter.ai/keys
+  apiKey: "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", // Get from https://openrouter.ai/keys
   apiUrl: "https://openrouter.ai/api/v1/chat/completions",
   defaultModel: "meta-llama/llama-3.3-70b-instruct:free", // Recommended for Arabic
 
