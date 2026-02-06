@@ -77,7 +77,7 @@ Task: Generate ${numberOfScripts} unique video ideas based on the topic: "${idea
 
 For each idea, you must provide two things:
 1.  **The Video Script (in Arabic):**
-    * **Duration:** 5-10 seconds max (Super Short).
+    * **Duration:** 5-6 seconds max (Super Short).
     * **Tone:** Friendly, energetic, authentic "Spoken Arabic" (عامية/لهجة بيضاء).
     * **POV:** First-person ("I"), speaking directly to the camera.
 
