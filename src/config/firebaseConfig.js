@@ -1,6 +1,3 @@
-// Firebase Configuration
-// IMPORTANT: Replace these with your actual Firebase credentials from Firebase Console
-// Go to: Project Settings > General > Your apps > Web app
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
@@ -14,7 +11,6 @@ const firebaseConfig = {
   appId: "1:843356439965:web:b9e75e7f428165592b5b74"
 };
 
-// Check if Firebase is configured
 const isConfigured = firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY" &&
                      firebaseConfig.projectId !== "your-project-id";
 
@@ -23,9 +19,7 @@ let db;
 
 if (isConfigured) {
   try {
-    // Initialize Firebase
     app = initializeApp(firebaseConfig);
-    // Initialize Firestore
     db = getFirestore(app);
     console.log('✅ Firebase initialized successfully');
   } catch (error) {

@@ -1,4 +1,3 @@
-// Firebase Service - Handles all Firestore operations
 import {
   collection,
   addDoc,
@@ -14,14 +13,7 @@ import { db, isConfigured } from '../config/firebaseConfig';
 
 const COLLECTION_NAME = 'videoIdeas';
 
-/**
- * Save a new video idea with its generated scripts to Firestore
- * @param {string} idea - The video idea text
- * @param {number} numberOfScripts - Number of scripts generated
- * @param {Array} scripts - Array of generated script objects
- * @param {string} model - The AI model used
- * @returns {Promise<string>} - Document ID of the saved idea
- */
+
 export const saveIdea = async (idea, numberOfScripts, scripts, model) => {
   if (!isConfigured || !db) {
     console.warn('⚠️ Firebase not configured - scripts not saved');
@@ -46,11 +38,7 @@ export const saveIdea = async (idea, numberOfScripts, scripts, model) => {
   }
 };
 
-/**
- * Get all saved video ideas from Firestore
- * @param {number} maxResults - Maximum number of results to fetch (default: 20)
- * @returns {Promise<Array>} - Array of idea objects with their IDs
- */
+
 export const getIdeas = async (maxResults = 20) => {
   if (!isConfigured || !db) {
     console.warn('⚠️ Firebase not configured - returning empty history');
@@ -82,11 +70,6 @@ export const getIdeas = async (maxResults = 20) => {
   }
 };
 
-/**
- * Delete a video idea from Firestore
- * @param {string} ideaId - The document ID to delete
- * @returns {Promise<void>}
- */
 export const deleteIdea = async (ideaId) => {
   if (!isConfigured || !db) {
     console.warn('⚠️ Firebase not configured - cannot delete');

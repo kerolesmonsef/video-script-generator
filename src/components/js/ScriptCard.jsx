@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaCopy, FaCheck, FaClock, FaImage } from 'react-icons/fa';
-import './ScriptCard.css';
+import '../css/ScriptCard.css';
 
 const ScriptCard = ({ script, index }) => {
   const [copied, setCopied] = useState(false);

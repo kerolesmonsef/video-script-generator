@@ -1,9 +1,8 @@
-// ScriptGenerator Component - Input form for generating scripts
 import React, { useState } from 'react';
 import { FaMagic, FaLightbulb, FaHashtag, FaRobot } from 'react-icons/fa';
-import { generateScripts } from '../services/openRouterService';
-import { OPENROUTER_CONFIG } from '../config/openRouterConfig';
-import './ScriptGenerator.css';
+import { generateScripts } from '../../services/openRouterService.js';
+import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
+import '../css/ScriptGenerator.css';
 
 const ScriptGenerator = ({ onScriptsGenerated }) => {
   const [idea, setIdea] = useState('');
@@ -12,11 +11,8 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate inputs
     if (!idea.trim()) {
       setError('الرجاء إدخال فكرة الفيديو');
       return;
@@ -26,10 +22,8 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
     setError(null);
 
     try {
-      // Call OpenRouter API to generate scripts
       const generatedScripts = await generateScripts(idea, numberOfScripts, selectedModel);
 
-      // Pass the generated scripts to parent component
       onScriptsGenerated(generatedScripts, idea, numberOfScripts, selectedModel);
 
     } catch (err) {
@@ -40,7 +34,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
     }
   };
 
-  // Handle number input change
   const handleNumberChange = (e) => {
     const value = parseInt(e.target.value) || 1;
     setNumberOfScripts(Math.min(10, Math.max(1, value)));
