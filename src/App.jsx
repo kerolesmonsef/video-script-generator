@@ -202,7 +202,7 @@ function App() {
       {/* Footer */}
       <footer className="app-footer">
         <p>مولد سكريبتات الفيديو بالذكاء الاصطناعي | Video Script Generator</p>
-        <p>Powered by OpenRouter & Firebase</p>
+        <p>created by Keroles Monsef</p>
       </footer>
     </div>
   );

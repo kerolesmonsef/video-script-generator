@@ -15,6 +15,7 @@ export const OPENROUTER_CONFIG = {
     { id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
     { id: "stepfun/step-3.5-flash:free", name: "stepfun/step-3.5-flash:free" },
     { id: "meta-llama/llama-3.3-70b-instruct:free", name: "meta-llama/llama-3.3-70b-instruct:free" },
+    { id: "nvidia/nemotron-3-nano-30b-a3b:free", name: "nvidia/nemotron-3-nano-30b-a3b:free" },
   ]
 };
 
