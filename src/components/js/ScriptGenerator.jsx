@@ -112,18 +112,6 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
           )}
         </button>
       </form>
-
-      {!loading && (
-        <div className="usage-tips">
-          <h4>💡 نصائح للحصول على أفضل النتائج:</h4>
-          <ul>
-            <li>كن محدداً في وصف فكرة الفيديو</li>
-            <li>استخدم Claude 3.5 Sonnet للحصول على أفضل النتائج بالعربية</li>
-            <li>ابدأ بـ 2-3 سكريبتات للتجربة</li>
-            <li>راجع السكريبتات المُنشأة وعدّل عليها حسب الحاجة</li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 };

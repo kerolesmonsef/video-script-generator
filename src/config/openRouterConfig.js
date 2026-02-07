@@ -1,7 +1,7 @@
 
 
 export const OPENROUTER_CONFIG = {
-  apiKey: "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", // Get from https://openrouter.ai/keys
+  apiKey: "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", // Get from https://openrouter.ai/keys
   apiUrl: "https://openrouter.ai/api/v1/chat/completions",
   defaultModel: "arcee-ai/trinity-large-preview:free", // Recommended for Arabic
 
@@ -12,7 +12,7 @@ export const OPENROUTER_CONFIG = {
     { id: "google/gemini-pro", name: "Gemini Pro" },
     { id: "stepfun/step-3.5-flash:free", name: "stepfun/step-3.5-flash:free" },
     { id: "meta-llama/llama-3.3-70b-instruct:free", name: "meta-llama/llama-3.3-70b-instruct:free" },
-    { id: "nvidia/nemotron-3-nano-30b-a3b:free", name: "nvidia/nemotron-3-nano-30b-a3b:free" },
+    { id: "tngtech/deepseek-r1t2-chimera:free", name: "tngtech/deepseek-r1t2-chimera:free" },
     { id: "arcee-ai/trinity-large-preview:free", name: "arcee-ai/trinity-large-preview:free" },
   ]
 };

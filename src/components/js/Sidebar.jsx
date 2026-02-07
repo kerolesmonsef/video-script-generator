@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaLightbulb, FaVideo, FaImage } from 'react-icons/fa';
+import { FaLightbulb, FaVideo, FaImage, FaBook } from 'react-icons/fa';
 import '../css/Sidebar.scss';
 
 const Sidebar = () => {
@@ -40,6 +40,15 @@ const Sidebar = () => {
         >
           <FaImage />
           <span>مولد صور الكرتون</span>
+        </NavLink>
+
+        <NavLink to="/video-story"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <FaBook />
+          <span>مولد قصص الفيديو</span>
         </NavLink>
       </div>
 
