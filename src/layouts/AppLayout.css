@@ -1,10 +1,7 @@
-/* Layout wrapper for left sidebar + routed content */
-
 .layout-root {
   min-height: 100vh;
 }
 
-/* This keeps sidebar on the left even though body is RTL */
 .layout-main {
   display: flex;
   flex-direction: row;

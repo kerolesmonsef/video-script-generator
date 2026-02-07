@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaLightbulb, FaVideo } from 'react-icons/fa';
+import { FaLightbulb, FaVideo, FaImage } from 'react-icons/fa';
 import '../css/Sidebar.css';
 
 const Sidebar = () => {
@@ -31,6 +31,15 @@ const Sidebar = () => {
         >
           <FaVideo />
           <span>مولد السكريبتات</span>
+        </NavLink>
+
+        <NavLink to="/cartoon-images"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <FaImage />
+          <span>مولد صور الكرتون</span>
         </NavLink>
       </div>
 

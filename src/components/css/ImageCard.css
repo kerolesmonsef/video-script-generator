@@ -1,0 +1,147 @@
+/* ImageCard Component Styles */
+
+.image-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: slideUp 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.image-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(255, 99, 132, 0.3);
+}
+
+.image-card-header {
+  background: linear-gradient(135deg, #ff6384 0%, #ff3860 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.image-card-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+.image-card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.image-section {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 12px;
+  border-right: 4px solid #ff6384;
+}
+
+.image-section h4 {
+  color: #ff6384;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.image-section p {
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.concept-section {
+  background: linear-gradient(135deg, #ffe6f0 0%, #ffb3d9 100%);
+  border-right-color: #ff6384;
+}
+
+.concept-section h4 {
+  color: #ff3860;
+}
+
+.prompt-section {
+  background: linear-gradient(135deg, #f3e6ff 0%, #e0b3ff 100%);
+  border-right-color: #9933ff;
+}
+
+.prompt-section h4 {
+  color: #9933ff;
+}
+
+.prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.prompt-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.prompt-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  direction: ltr;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.copy-button {
+  background: linear-gradient(135deg, #ff6384 0%, #ff3860 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.copy-button:hover {
+  background: linear-gradient(135deg, #ff3860 0%, #ff6384 100%);
+}
+
+.copy-button.copied {
+  background: linear-gradient(135deg, #00cc66 0%, #009944 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .image-card-header h3 {
+    font-size: 1.2rem;
+  }
+}

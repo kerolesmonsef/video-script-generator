@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { FaMagic, FaLightbulb, FaHashtag, FaRobot } from 'react-icons/fa';
-import { generateScripts } from '../../services/openRouterService.js';
+import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
+import { generateVideoScripts } from '../../services/openRouterService.js';
 import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
+import ModelSelector from './ModelSelector.jsx';
 import '../css/ScriptGenerator.css';
 
 const ScriptGenerator = ({ onScriptsGenerated }) => {
@@ -22,7 +23,7 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
     setError(null);
 
     try {
-      const generatedScripts = await generateScripts(idea, numberOfScripts, selectedModel);
+      const generatedScripts = await generateVideoScripts(idea, numberOfScripts, selectedModel);
 
       onScriptsGenerated(generatedScripts, idea, numberOfScripts, selectedModel);
 
@@ -80,24 +81,11 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
             <small>من 1 إلى 10 سكريبتات</small>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="model">
-              <FaRobot /> نموذج الذكاء الاصطناعي
-            </label>
-            <select
-              id="model"
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              disabled={loading}
-            >
-              {OPENROUTER_CONFIG.models.map((model) => (
-                <option key={model.id} value={model.id}>
-                  {model.name}
-                </option>
-              ))}
-            </select>
-            <small>اختر النموذج المناسب</small>
-          </div>
+          <ModelSelector
+            selectedModel={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            disabled={loading}
+          />
         </div>
 
         {/* Error Message */}

@@ -12,48 +12,40 @@ const openai = new OpenAI({
 });
 
 const SCRIPT_SCHEMA = {
-    openai: {
-        type: "object",
-        properties: {
-            scripts: {
-                type: "array",
-                items: {
-                    type: "object",
-                    properties: {
-                        visualDescription: {
-                            type: "string",
-                            description: "وصف بصري مفصل للغاية باللغة العربية لمولد الفيديو بالذكاء الاصطناعي. يجب أن يكون مناسبًا لفيديو مدته 5 ثوانٍ بالضبط"
-                        },
-                        voiceText: {
-                            type: "string",
-                            description: "نص التعليق الصوتي باللغة العربية. يجب أن يكون قصيرًا جدًا ليناسب 5 ثوانٍ"
-                        },
-                        benefit: {
-                            type: "string",
-                            description: "فائدة رئيسية واحدة للموضوع باللغة العربية"
-                        },
-                        drawback: {
-                            type: "string",
-                            description: "سلبية رئيسية واحدة للموضوع باللغة العربية"
-                        }
+    type: "object",
+    properties: {
+        scripts: {
+            type: "array",
+            items: {
+                type: "object",
+                properties: {
+                    visualDescription: {
+                        type: "string",
+                        description: "وصف بصري مفصل للغاية باللغة العربية لمولد الفيديو بالذكاء الاصطناعي. يجب أن يكون مناسبًا لفيديو مدته 5 ثوانٍ بالضبط"
                     },
-                    required: ["visualDescription", "voiceText", "benefit", "drawback"]
-                }
+                    voiceText: {
+                        type: "string",
+                        description: "نص التعليق الصوتي باللغة العربية. يجب أن يكون قصيرًا جدًا ليناسب 5 ثوانٍ"
+                    },
+                    benefit: {
+                        type: "string",
+                        description: "فائدة رئيسية واحدة للموضوع باللغة العربية"
+                    },
+                    drawback: {
+                        type: "string",
+                        description: "سلبية رئيسية واحدة للموضوع باللغة العربية"
+                    }
+                },
+                required: ["visualDescription", "voiceText", "benefit", "drawback"]
             }
-        },
-        required: ["scripts"],
-        additionalProperties: false
-    }
+        }
+    },
+    required: ["scripts"],
+    additionalProperties: false
 };
 
-/**
- * Generate video scripts using OpenRouter API via OpenAI SDK
- * @param {string} idea - The video idea to generate scripts for
- * @param {number} numberOfScripts - Number of scripts to generate (1-10)
- * @param {string} model - The AI model to use (optional, uses default if not provided)
- * @returns {Promise<Array>} - Array of generated script objects
- */
-export const generateScripts = async (idea, numberOfScripts, model = OPENROUTER_CONFIG.defaultModel) => {
+
+export const generateVideoScripts = async (idea, numberOfScripts, model = OPENROUTER_CONFIG.defaultModel) => {
     try {
         if (!idea || idea.trim().length === 0) {
             throw new Error('الرجاء إدخال فكرة الفيديو');
@@ -120,7 +112,7 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
                     type: "json_schema",
                     json_schema: {
                         name: "video_scripts_response",
-                        schema: SCRIPT_SCHEMA.openai,
+                        schema: SCRIPT_SCHEMA,
                         strict: true
                     }
                 }
@@ -269,3 +261,54 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
     }
 };
 
+
+export const generateImagePrompts = async (idea, numberOfImages, model = OPENROUTER_CONFIG.defaultModel) => {
+    try {
+        if (!idea || idea.trim().length === 0) {
+            throw new Error('الرجاء إدخال فكرة الصورة');
+        }
+
+        const prompt = `You are a world-class Pixar-style Art Director and Prompt Engineer.
+Task: Generate ${numberOfImages} unique image generation prompts based on the topic: "${idea}".
+
+Strict Style Guidelines:
+- Style: High-end Pixar/Disney 3D animation, rendered with Octane Render for ultra-photorealistic textures.
+- Subject: A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, and a charming emotional expression.
+- Technicals: 8k resolution, vibrant balanced colors, cinematic high-fidelity detail, subsurface scattering, and dramatic cinematic lighting (key, fill, and rim light).
+- Composition: Shallow depth of field (bokeh blur) to focus on the character in a visually rich environment.
+
+Output MUST be in this exact JSON format:
+{
+  "images": [
+    {
+      "conceptTitle": "Short title in Arabic",
+      "imagePrompt": "Full detailed English prompt for Midjourney/DALL-E"
+    }
+  ]
+}
+No other fields (benefits, scripts, etc.) are allowed.`;
+
+        const completion = await openai.chat.completions.create({
+            model: model,
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an AI specialized in high-end 3D character design prompts. You only output valid JSON."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.8,
+        });
+
+        const aiResponse = JSON.parse(completion.choices[0].message.content);
+        return aiResponse.images;
+
+    } catch (error) {
+        console.error('❌ Error generating image prompts:', error);
+        throw error;
+    }
+};
