@@ -24,6 +24,8 @@ const CharacterCard = ({ character, index }) => {
 الوصف: ${character.description}
 
 الدور: ${character.role}
+
+${character.characterImagePrompt ? `برومبت الصورة: ${character.characterImagePrompt}` : ''}
     `.trim();
 
         navigator.clipboard.writeText(textToCopy)
@@ -88,6 +90,22 @@ const CharacterCard = ({ character, index }) => {
                     </div>
                     <p>{character.role}</p>
                 </div>
+
+                {character.characterImagePrompt && (
+                    <div className="character-field">
+                        <div className="field-header">
+                            <label>🖼️ برومبت الصورة</label>
+                            <button
+                                className={`copy-btn ${copiedField === 'characterImagePrompt' ? 'copied' : ''}`}
+                                onClick={() => handleCopy(character.characterImagePrompt, 'characterImagePrompt')}
+                                title="نسخ برومبت الصورة"
+                            >
+                                {copiedField === 'characterImagePrompt' ? <FaCheck /> : <FaCopy />}
+                            </button>
+                        </div>
+                        <p>{character.characterImagePrompt}</p>
+                    </div>
+                )}
             </div>
 
             <button

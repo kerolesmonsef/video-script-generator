@@ -48,9 +48,6 @@ Image Prompt: ${script.imagePrompt || ''}
     <div className="script-card">
       <div className="script-card-header">
         <h3>سكريبت #{index + 1}</h3>
-        <div className="duration-badge">
-          <FaClock /> <span>5 ثوانٍ</span>
-        </div>
       </div>
 
       <div className="script-card-body">

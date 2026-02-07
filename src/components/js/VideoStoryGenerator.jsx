@@ -9,7 +9,7 @@ import '../css/VideoStoryGenerator.scss';
 
 const VideoStoryGenerator = ({ onStoryGenerated }) => {
     const [idea, setIdea] = useState('');
-    const [numberOfScenes, setNumberOfScenes] = useState(3);
+    const [numberOfScenes, setNumberOfScenes] = useState(10);
     const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -43,7 +43,7 @@ const VideoStoryGenerator = ({ onStoryGenerated }) => {
 
     const handleNumberChange = (e) => {
         const value = parseInt(e.target.value) || 1;
-        setNumberOfScenes(Math.min(10, Math.max(1, value)));
+        setNumberOfScenes(value);
     };
 
     return (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaCopy, FaCheck, FaClock, FaUsers } from 'react-icons/fa';
+import { FaCopy, FaCheck, FaUsers } from 'react-icons/fa';
 import '../css/SceneCard.scss';
 
 const SceneCard = ({ scene, index }) => {
@@ -36,7 +36,9 @@ const SceneCard = ({ scene, index }) => {
 نبرات الصوت:
 ${voiceTonesText}
 
-المدة: ${scene.duration}
+${scene.sceneImagePrompt ? `برومبت الصورة: ${scene.sceneImagePrompt}` : ''}
+
+${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` : ''}
     `.trim();
 
         navigator.clipboard.writeText(textToCopy)
@@ -54,11 +56,6 @@ ${voiceTonesText}
         <div className="scene-card">
             <div className="scene-card-header">
                 <h3>مشهد #{scene.sceneNumber || index + 1}</h3>
-                <div className="scene-meta">
-                    <div className="duration-badge">
-                        <FaClock /> <span>{scene.duration || '5 ثواني'}</span>
-                    </div>
-                </div>
             </div>
 
             <div className="scene-card-body">
@@ -141,6 +138,40 @@ ${voiceTonesText}
                                 </span>
                             ))}
                         </div>
+                    </div>
+                )}
+
+                {/* Scene Image Prompt */}
+                {scene.sceneImagePrompt && (
+                    <div className="scene-field">
+                        <div className="field-header">
+                            <label>🖼️ برومبت الصورة</label>
+                            <button
+                                className={`copy-btn ${copiedField === 'sceneImagePrompt' ? 'copied' : ''}`}
+                                onClick={() => handleCopy(scene.sceneImagePrompt, 'sceneImagePrompt')}
+                                title="نسخ برومبت الصورة"
+                            >
+                                {copiedField === 'sceneImagePrompt' ? <FaCheck /> : <FaCopy />}
+                            </button>
+                        </div>
+                        <p>{scene.sceneImagePrompt}</p>
+                    </div>
+                )}
+
+                {/* Grok Prompt */}
+                {scene.grokPrompt && (
+                    <div className="scene-field">
+                        <div className="field-header">
+                            <label>🎥 برومبت الفيديو (Grok)</label>
+                            <button
+                                className={`copy-btn ${copiedField === 'grokPrompt' ? 'copied' : ''}`}
+                                onClick={() => handleCopy(scene.grokPrompt, 'grokPrompt')}
+                                title="نسخ برومبت الفيديو"
+                            >
+                                {copiedField === 'grokPrompt' ? <FaCheck /> : <FaCopy />}
+                            </button>
+                        </div>
+                        <p>{scene.grokPrompt}</p>
                     </div>
                 )}
             </div>

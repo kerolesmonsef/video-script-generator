@@ -12,7 +12,7 @@ const ScriptsPage = () => {
 
   const loadHistory = async () => {
     try {
-      const ideas = await getIdeas();
+      const ideas = await getIdeas({ collection: 'videoIdeas' });
       setHistory(ideas);
     } catch (error) {
       console.error('Failed to load history:', error);
@@ -23,17 +23,10 @@ const ScriptsPage = () => {
     loadHistory();
   }, []);
 
-  const handleScriptsGenerated = async (generatedScripts, idea, numberOfScripts, model) => {
+  const handleScriptsGenerated = async (generatedScripts, idea) => {
     setScripts(generatedScripts);
     setCurrentIdea(idea);
     setShowHistory(false);
-
-    try {
-      await saveIdea(idea, numberOfScripts, generatedScripts, model);
-      loadHistory();
-    } catch (error) {
-      console.error('Failed to save to Firebase:', error);
-    }
   };
 
   const handleLoadPreviousIdea = (idea) => {
@@ -48,7 +41,7 @@ const ScriptsPage = () => {
     }
 
     try {
-      await deleteIdea(ideaId);
+      await deleteIdea({ collection: 'videoIdeas', id: ideaId });
 
       setHistory((prev) => prev.filter((item) => item.id !== ideaId));
 

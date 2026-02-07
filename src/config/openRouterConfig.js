@@ -1,7 +1,7 @@
 
 
 export const OPENROUTER_CONFIG = {
-  apiKey: "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", // Get from https://openrouter.ai/keys
+  apiKey: "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", // Get from https://openrouter.ai/keys
   apiUrl: "https://openrouter.ai/api/v1/chat/completions",
   defaultModel: "arcee-ai/trinity-large-preview:free", // Recommended for Arabic
 
@@ -19,7 +19,7 @@ export const OPENROUTER_CONFIG = {
 
 
 export const isOpenRouterConfigured = OPENROUTER_CONFIG.apiKey !== "YOUR_OPENROUTER_API_KEY" &&
-                                      OPENROUTER_CONFIG.apiKey.startsWith("sk-or-");
+  OPENROUTER_CONFIG.apiKey.startsWith("sk-or-");
 
 if (!isOpenRouterConfigured) {
   console.warn('⚠️ OpenRouter API key not configured. Please update src/config/openRouterConfig.js');

@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import {OPENROUTER_CONFIG, isOpenRouterConfigured} from '../config/openRouterConfig';
 import {findValue, handleError} from "./helpers.js";
+import { saveIdea } from './firebaseService';
 
 const openai = new OpenAI({
     apiKey: OPENROUTER_CONFIG.apiKey,
@@ -66,7 +67,6 @@ Task: Generate ${numberOfScripts} unique video ideas based on the topic: "${idea
 
 For each idea, you must provide two things:
 1.  **The Video Script (in Egyptian Arabic):**
-    * **Duration:** STRICTLY 5 seconds max (Micro-content).
     * **Language:** Authentic Egyptian Slang (عامية مصرية).
     * **Content Strategy:** The script must be a SINGLE, punchy sentence. It must offer a direct "Golden Tip" OR a "Warning against a specific harm" related to the topic. No intros, no outros, just the core value.
     * **Voice Personality:** Define the specific vocal style suitable for the character (e.g., "Squeaky & Funny", "Deep & Wise", "Fast & Panic-stricken").
@@ -117,7 +117,7 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
                         strict: true
                     }
                 }
-                : { type: "json_object" },
+                : {type: "json_object"},
             temperature: 0.9,
             max_tokens: 3000,
         });
@@ -219,6 +219,24 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
         }
 
         console.log(`✅ Successfully generated ${validScripts.length} scripts`);
+
+        // Save to Firebase
+        try {
+            await saveIdea({
+                collection: 'videoScripts',
+                model: {
+                    idea,
+                    numberOfScripts,
+                    scripts: validScripts,
+                    model
+                }
+            });
+            console.log('✅ Scripts saved to Firebase');
+        } catch (error) {
+            console.warn('⚠️ Failed to save scripts to Firebase:', error);
+            // Don't throw error, just log it - we still want to return the scripts
+        }
+
         return validScripts;
 
     } catch (error) {
@@ -237,7 +255,8 @@ Task: Generate ${numberOfImages} unique image generation prompts based on the to
 
 Strict Style Guidelines:
 - Style: High-end Pixar/Disney 3D animation, rendered with Octane Render for ultra-photorealistic textures.
-- Subject: A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, and a charming emotional expression.
+- Subject: A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose.
+- Character Design: The object should have a cute, appealing cartoon appearance with smooth, rounded features typical of Pixar characters, while maintaining clear human-like limbs and posture.
 - Technicals: 8k resolution, vibrant balanced colors, cinematic high-fidelity detail, subsurface scattering, and dramatic cinematic lighting (key, fill, and rim light).
 - Composition: Shallow depth of field (bokeh blur) to focus on the character in a visually rich environment.
 
@@ -264,12 +283,30 @@ No other fields (benefits, scripts, etc.) are allowed.`;
                     content: prompt
                 }
             ],
-            response_format: { type: "json_object" },
+            response_format: {type: "json_object"},
             temperature: 0.8,
         });
 
         const aiResponse = JSON.parse(completion.choices[0].message.content);
-        return aiResponse.images;
+        const images = aiResponse.images;
+
+        // Save to Firebase
+        try {
+            await saveIdea({
+                collection: 'imagePrompts',
+                model: {
+                    idea,
+                    numberOfImages,
+                    images,
+                    model
+                }
+            });
+            console.log('✅ Image prompts saved to Firebase');
+        } catch (error) {
+            console.warn('⚠️ Failed to save image prompts to Firebase:', error);
+        }
+
+        return images;
 
     } catch (error) {
         console.error('❌ Error generating image prompts:', error);
@@ -279,7 +316,6 @@ No other fields (benefits, scripts, etc.) are allowed.`;
 
 export const generateVideoStory = async (idea, numberOfScenes, model = OPENROUTER_CONFIG.defaultModel) => {
     try {
-
         if (!isOpenRouterConfigured) {
             throw new Error('⚠️ الرجاء تكوين مفتاح OpenRouter API في ملف openRouterConfig.js\n\nاتبع الخطوات في SETUP_INSTRUCTIONS.md');
         }
@@ -299,6 +335,10 @@ Requirements:
      * Name (in Egyptian dialect)
      * Description (physical appearance, personality - in Egyptian dialect)
      * Role in the story (their purpose/function - in Egyptian dialect)
+     * **characterImagePrompt**: A SIMPLE English prompt to generate the character's image (5-10 words max)
+       Example: "A picture of a cute little strawberry standing up"
+       Example: "Picture of a long banana and a standing man"
+       Example: "Picture of an evil apple with an angry face"
 
 2. **Scenes:**
    - Create exactly ${numberOfScenes} scenes
@@ -310,6 +350,12 @@ Requirements:
      * Visual description (what we see on screen - in Egyptian dialect)
      * Dialogue/narration (what is spoken - in Egyptian dialect - عامية مصرية)
      * Voice tone for EACH character using emojis (e.g., 😊 happy, 😢 sad, 😱 scared, 😤 angry, 🤔 thoughtful, 😎 cool, 🥺 pleading, 😂 laughing, 😨 worried, 🤗 warm)
+     * **sceneImagePrompt**: A SIMPLE English prompt describing the scene composition (10-15 words max)
+       Example: "A picture of a little strawberry standing in a romantic pose with a long banana in a garden"
+       Example: "Picture of an evil apple talking to a big strawberry dad in a house"
+     * **grokPrompt**: A DETAILED English description of the action, movement, and emotion for AI video generation (20-30 words) Dialogue: [الحوار بالعربي المصري من حقل dialogue]
+       Example: "The strawberry looks lovingly into the banana's eyes with a warm smile, while the banana leans closer with a gentle, caring expression in a sunny garden"
+       Example: "The evil apple whispers secretly to the stern father strawberry, with suspicious gestures and a cunning smirk on his face"
 
 Story Guidelines:
 - Make the story engaging and attractive
@@ -320,12 +366,14 @@ Story Guidelines:
 - Use natural Egyptian slang and expressions (عامية مصرية أصيلة)
 
 Output must be in this exact JSON format:
+
 {
   "characters": [
     {
       "name": "اسم الشخصية (باللهجة المصرية)",
       "description": "الوصف الكامل (باللهجة المصرية)",
-      "role": "دور الشخصية في القصة (باللهجة المصرية)"
+      "role": "دور الشخصية في القصة (باللهجة المصرية)",
+      "characterImagePrompt": "صورة [وصف بسيط جدا للشخصية بالعامية المصرية - 5-10 كلمات]"
     }
   ],
   "scenes": [
@@ -338,41 +386,47 @@ Output must be in this exact JSON format:
         "الشخصية1": "😊",
         "الشخصية2": "🤔"
       },
-      "duration": "5 ثواني"
+      "sceneImagePrompt": "صورة [وصف المشهد بالعامية - 10-15 كلمة - يشمل كل الشخصيات والمكان]",
+      "grokPrompt": "Detailed English description of actions, movements, emotions, and what happens in this scene for video generation (20-30 words) , Dialogue: [الحوار بالعربي المصري من حقل dialogue]"
     }
   ]
 }
 
 IMPORTANT: 
-- ALL TEXT must be in EGYPTIAN DIALECT (اللهجة المصرية العامية)
+- ALL Arabic TEXT must be in EGYPTIAN DIALECT (اللهجة المصرية العامية)
 - 'dialogue' must fit in 5 seconds (10-15 words max)
 - 'voiceTones' must use emojis to express emotion for each character
+- 'characterImagePrompt' must be SIMPLE and SHORT (5-10 words in Egyptian Arabic)
+- 'sceneImagePrompt' must be SIMPLE and include all characters in scene (10-15 words in Egyptian Arabic)
+- 'grokPrompt' must be DETAILED in English describing the action and emotion and the Dialogue: [الحوار بالعربي المصري من حقل dialogue]
 - All scenes together must form ONE complete story
 - Generate exactly ${numberOfScenes} scenes
-- Use natural Egyptian expressions like: يلّا، طب، ماشي، يا سلام، ازيك، etc.`;
+- Use natural Egyptian expressions like: يلّا، طب، ماشي، يا سلام، ازيك, etc.`;
 
         console.log('🚀 Calling OpenRouter API with model:', model);
-
 
         const completion = await openai.chat.completions.create({
             model: model,
             messages: [
                 {
                     role: "system",
-                    content: "You are a master storyteller and scriptwriter. You create engaging, cohesive stories with memorable characters in authentic Egyptian dialect (اللهجة المصرية العامية). You always output valid JSON."
+                    content: "You are a master storyteller and scriptwriter. You create engaging, cohesive stories with memorable characters in authentic Egyptian dialect (اللهجة المصرية العامية). You always output valid JSON with all required fields including characterImagePrompt, sceneImagePrompt, and grokPrompt."
                 },
                 {
                     role: "user",
                     content: prompt
                 }
             ],
-            response_format:{ type: "json_object" },
+            response_format: {type: "json_object"},
             temperature: 0.8,
-            max_tokens: 5000,
+            max_tokens: 6000,
         });
 
         const aiResponse = completion.choices[0].message.content;
         console.log('✅ AI Response received');
+        console.log("✅ AI completion:", completion);
+        console.log("✅ AI message content:", completion.choices[0].message);
+        console.log("✅ AI Response:", aiResponse);
 
         let parsedData;
         try {
@@ -408,7 +462,16 @@ IMPORTANT:
             return {
                 name: findValue(char, ['name', 'Name', 'الاسم', 'اسم']) || '',
                 description: findValue(char, ['description', 'Description', 'الوصف', 'وصف']) || '',
-                role: findValue(char, ['role', 'Role', 'الدور', 'دور']) || ''
+                role: findValue(char, ['role', 'Role', 'الدور', 'دور']) || '',
+                characterImagePrompt: findValue(char, [
+                    'characterImagePrompt',
+                    'character_image_prompt',
+                    'CharacterImagePrompt',
+                    'imagePrompt',
+                    'image_prompt',
+                    'promptالصورة',
+                    'برومبت_الصورة'
+                ]) || ''
             };
         });
 
@@ -419,11 +482,41 @@ IMPORTANT:
                 visualDescription: findValue(scene, ['visualDescription', 'visual_description', 'VisualDescription', 'visual', 'الوصف_البصري', 'وصف_بصري']) || '',
                 dialogue: findValue(scene, ['dialogue', 'Dialogue', 'text', 'الحوار', 'حوار', 'النص']) || '',
                 voiceTones: findValue(scene, ['voiceTones', 'voice_tones', 'VoiceTones', 'tones', 'النبرات', 'نبرات']) || {},
-                duration: findValue(scene, ['duration', 'Duration', 'المدة', 'مدة']) || '5 ثواني'
+                sceneImagePrompt: findValue(scene, [
+                    'sceneImagePrompt',
+                    'scene_image_prompt',
+                    'SceneImagePrompt',
+                    'imagePrompt',
+                    'image_prompt',
+                    'promptالصورة',
+                    'برومبت_المشهد'
+                ]) || '',
+                grokPrompt: findValue(scene, [
+                    'grokPrompt',
+                    'grok_prompt',
+                    'GrokPrompt',
+                    'videoPrompt',
+                    'video_prompt',
+                    'actionDescription',
+                    'action_description'
+                ]) || ''
             };
         });
 
         console.log(`✅ Successfully generated ${validCharacters.length} characters and ${validScenes.length} scenes`);
+
+        try {
+            await saveIdea({
+                collection: 'videoStories',
+                model: {
+                    characters,
+                    scenes,
+                }
+            });
+            console.log('✅ Image prompts saved to Firebase');
+        } catch (error) {
+            console.warn('⚠️ Failed to save image prompts to Firebase:', error);
+        }
 
         return {
             characters: validCharacters,

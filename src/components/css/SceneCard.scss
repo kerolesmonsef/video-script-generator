@@ -31,25 +31,6 @@
     margin: 0;
     font-weight: 600;
 }
-
-.scene-meta {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.duration-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: linear-gradient(135deg, var(--primary-light-gradient-start) 0%, var(--primary-light-gradient-end) 100%);
-    color: var(--primary-color);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
 .scene-card-body {
     display: flex;
     flex-direction: column;
