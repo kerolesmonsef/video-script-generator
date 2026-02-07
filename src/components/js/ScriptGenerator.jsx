@@ -3,7 +3,7 @@ import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
 import { generateVideoScripts } from '../../services/openRouterService.js';
 import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
 import ModelSelector from './ModelSelector.jsx';
-import '../css/ScriptGenerator.css';
+import '../css/ScriptGenerator.scss';
 
 const ScriptGenerator = ({ onScriptsGenerated }) => {
   const [idea, setIdea] = useState('');

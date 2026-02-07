@@ -1,0 +1,66 @@
+:root {
+    --primary-gradient-start: #667eea;
+    --primary-gradient-end: #764ba2;
+    --primary-color: #667eea;
+    --primary-dark: #764ba2;
+
+    --accent-purple: #9933ff;
+    --accent-orange: #ff9900;
+    --accent-blue: #0099ff;
+
+    --success-gradient-start: #00cc66;
+    --success-gradient-end: #009944;
+    --success-color: #00cc66;
+
+    --error-gradient-start: #ffe6e6;
+    --error-gradient-end: #ffb3b3;
+    --error-color: #ff4757;
+    --error-dark: #cc0000;
+
+    --warning-gradient-start: #fff5e6;
+    --warning-gradient-end: #ffe0b3;
+
+    --info-gradient-start: #e6f7ff;
+    --info-gradient-end: #b3e0ff;
+
+    --purple-light-gradient-start: #f3e6ff;
+    --purple-light-gradient-end: #e0b3ff;
+
+    --primary-light-gradient-start: #f0f4ff;
+    --primary-light-gradient-end: #e0e8ff;
+
+    --white: #ffffff;
+    --white-95: rgba(255, 255, 255, 0.95);
+    --white-50: rgba(255, 255, 255, 0.5);
+    --white-30: rgba(255, 255, 255, 0.3);
+    --white-20: rgba(255, 255, 255, 0.2);
+
+    --black-10: rgba(0, 0, 0, 0.1);
+    --black-06: rgba(0, 0, 0, 0.06);
+
+    --gray-light: #f8f9fa;
+    --gray-medium: #999;
+    --gray-dark: #666;
+    --gray-darker: #333;
+    --gray-border: #e0e0e0;
+
+    --youtube-gradient-start: #ff0000;
+    --youtube-gradient-end: #cc0000;
+
+    --tiktok-gradient-start: #00f2ea;
+    --tiktok-gradient-end: #ff0050;
+
+    --shadow-sm: 0 4px 15px;
+    --shadow-md: 0 6px 20px;
+    --shadow-lg: 0 8px 32px;
+    --shadow-xl: 0 12px 40px;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 14px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+
+    --transition-base: all 0.3s ease;
+    --transition-fast: all 0.2s ease;
+}

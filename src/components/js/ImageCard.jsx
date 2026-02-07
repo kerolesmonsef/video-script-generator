@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaCopy, FaCheck, FaImage } from 'react-icons/fa';
-import '../css/ImageCard.css';
+import '../css/ImageCard.scss';
 
 const ImageCard = ({ image, index }) => {
   const [copied, setCopied] = useState(false);

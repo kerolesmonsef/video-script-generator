@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaMagic, FaLightbulb, FaHashtag, FaRobot } from 'react-icons/fa';
 import { generateImagePrompts } from '../../services/openRouterService.js';
 import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
-import '../css/CartoonImageGenerator.css';
+import '../css/CartoonImageGenerator.scss';
 import ModelSelector from "./ModelSelector.jsx";
 
 const CartoonImageGenerator = ({ onImagesGenerated }) => {

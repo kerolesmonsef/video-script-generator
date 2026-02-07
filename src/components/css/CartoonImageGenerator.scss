@@ -1,4 +1,4 @@
-/* CartoonImageGenerator Component Styles */
+@use './variables' as *;
 
 .cartoon-image-generator {
     max-width: 900px;
@@ -27,7 +27,7 @@
 .generator-header h1 {
     font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #ff6384 0%, #ff3860 100%);
+    background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -36,15 +36,15 @@
 
 .generator-header p {
     font-size: 1.1rem;
-    color: #666;
+    color: var(--gray-dark);
 }
 
 .generator-form {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--white-95);
     backdrop-filter: blur(10px);
     padding: 2rem;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg) var(--black-10);
     animation: slideUp 0.6s ease;
 }
 
@@ -69,13 +69,13 @@
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
-    color: #333;
+    color: var(--gray-darker);
     margin-bottom: 0.5rem;
     font-size: 1rem;
 }
 
 .form-group label svg {
-    color: #ff6384;
+    color: var(--primary-color);
 }
 
 .form-group textarea,
@@ -83,20 +83,20 @@
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
+    border: 2px solid var(--gray-border);
+    border-radius: var(--radius-md);
     font-size: 1rem;
     font-family: inherit;
-    transition: all 0.3s ease;
-    background: white;
+    transition: var(--transition-base);
+    background: var(--white);
 }
 
 .form-group textarea:focus,
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #ff6384;
-    box-shadow: 0 0 0 3px rgba(255, 99, 132, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-group textarea {
@@ -107,7 +107,7 @@
 .form-group small {
     display: block;
     margin-top: 0.5rem;
-    color: #666;
+    color: var(--gray-dark);
     font-size: 0.85rem;
 }
 
@@ -118,11 +118,11 @@
 }
 
 .error-message {
-    background: linear-gradient(135deg, #ffe6e6 0%, #ffb3b3 100%);
-    color: #cc0000;
+    background: linear-gradient(135deg, var(--error-gradient-start) 0%, var(--error-gradient-end) 100%);
+    color: var(--error-dark);
     padding: 1rem;
-    border-radius: 12px;
-    border-right: 4px solid #ff4757;
+    border-radius: var(--radius-md);
+    border-right: 4px solid var(--error-color);
     margin-bottom: 1rem;
     font-weight: 600;
     animation: shake 0.5s ease;
@@ -146,26 +146,26 @@
 
 .generate-button {
     width: 100%;
-    background: linear-gradient(135deg, #ff6384 0%, #ff3860 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+    color: var(--white);
     border: none;
     padding: 1rem 2rem;
     font-size: 1.1rem;
     font-weight: 700;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 15px rgba(255, 99, 132, 0.3);
+    box-shadow: var(--shadow-sm) rgba(102, 126, 234, 0.3);
 }
 
 .generate-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, #ff3860 0%, #ff6384 100%);
+    background: linear-gradient(135deg, var(--primary-gradient-end) 0%, var(--primary-gradient-start) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 99, 132, 0.4);
+    box-shadow: var(--shadow-md) rgba(102, 126, 234, 0.4);
 }
 
 .generate-button:active:not(:disabled) {
@@ -180,8 +180,8 @@
 .spinner {
     width: 20px;
     height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
+    border: 3px solid var(--white-30);
+    border-top-color: var(--white);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -194,14 +194,14 @@
 
 .usage-tips {
     margin-top: 2rem;
-    background: linear-gradient(135deg, #fff5f7 0%, #ffe6eb 100%);
+    background: linear-gradient(135deg, var(--primary-light-gradient-start) 0%, var(--primary-light-gradient-end) 100%);
     padding: 1.5rem;
-    border-radius: 16px;
-    border-right: 4px solid #ff6384;
+    border-radius: var(--radius-xl);
+    border-right: 4px solid var(--primary-color);
 }
 
 .usage-tips h4 {
-    color: #ff3860;
+    color: var(--primary-dark);
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
 }
@@ -209,7 +209,7 @@
 .usage-tips ul {
     margin: 0;
     padding-right: 1.5rem;
-    color: #333;
+    color: var(--gray-darker);
 }
 
 .usage-tips li {
@@ -217,7 +217,6 @@
     line-height: 1.6;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .cartoon-image-generator {
         padding: 1rem;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FaLightbulb, FaVideo, FaImage } from 'react-icons/fa';
-import '../css/Sidebar.css';
+import '../css/Sidebar.scss';
 
 const Sidebar = () => {
   return (

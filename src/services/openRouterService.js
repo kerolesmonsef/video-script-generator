@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import {OPENROUTER_CONFIG, isOpenRouterConfigured} from '../config/openRouterConfig';
+import {findValue, handleError} from "./helpers.js";
 
 const openai = new OpenAI({
     apiKey: OPENROUTER_CONFIG.apiKey,
@@ -172,14 +173,7 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
         const validScripts = scripts.map(script => {
             console.log('🔍 Raw script keys:', Object.keys(script));
 
-            const findValue = (obj, keys) => {
-                for (const key of keys) {
-                    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
-                        return obj[key];
-                    }
-                }
-                return '';
-            };
+
 
             const normalized = {
                 visualDescription: findValue(script, [
@@ -228,39 +222,9 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
         return validScripts;
 
     } catch (error) {
-
-        console.error('❌ Error generating scripts:', error);
-
-
-        if (error.status) {
-            if (error.status === 401) {
-                throw new Error('مفتاح API غير صحيح. الرجاء التحقق من الإعدادات.');
-            } else if (error.status === 429) {
-                throw new Error('تم تجاوز الحد المسموح. الرجاء المحاولة لاحقاً.');
-            } else if (error.status === 402) {
-                throw new Error('رصيد API غير كافٍ. الرجاء إعادة الشحن على OpenRouter.');
-            } else if (error.status === 400) {
-                throw new Error('طلب غير صحيح. قد يكون النموذج المحدد غير متاح.');
-            } else {
-                throw new Error(`خطأ في API: ${error.status} - ${error.message || 'خطأ غير معروف'}`);
-            }
-        }
-
-
-        if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
-            throw new Error('خطأ في الاتصال بالإنترنت. الرجاء التحقق من اتصالك.');
-        }
-
-
-        if (error.message && error.message.includes('الرجاء')) {
-            throw error;
-        }
-
-
-        throw new Error('حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى.');
+        handleError(error);
     }
 };
-
 
 export const generateImagePrompts = async (idea, numberOfImages, model = OPENROUTER_CONFIG.defaultModel) => {
     try {
@@ -310,5 +274,163 @@ No other fields (benefits, scripts, etc.) are allowed.`;
     } catch (error) {
         console.error('❌ Error generating image prompts:', error);
         throw error;
+    }
+};
+
+export const generateVideoStory = async (idea, numberOfScenes, model = OPENROUTER_CONFIG.defaultModel) => {
+    try {
+
+        if (!isOpenRouterConfigured) {
+            throw new Error('⚠️ الرجاء تكوين مفتاح OpenRouter API في ملف openRouterConfig.js\n\nاتبع الخطوات في SETUP_INSTRUCTIONS.md');
+        }
+
+        const prompt = `You are an expert storyteller and scriptwriter specializing in creating engaging video narratives in authentic Egyptian dialect.
+
+Task: Create a complete, cohesive video story based on the topic: "${idea}".
+The story must be divided into exactly ${numberOfScenes} scenes.
+
+**CRITICAL: ALL TEXT MUST BE IN AUTHENTIC EGYPTIAN DIALECT (اللهجة المصرية العامية)**
+
+Requirements:
+
+1. **Characters:**
+   - Create a cast of characters needed for this story
+   - Each character must have:
+     * Name (in Egyptian dialect)
+     * Description (physical appearance, personality - in Egyptian dialect)
+     * Role in the story (their purpose/function - in Egyptian dialect)
+
+2. **Scenes:**
+   - Create exactly ${numberOfScenes} scenes
+   - Each scene MUST be exactly 5 seconds long
+   - Each scene should contain 10-15 words maximum (to fit naturally in 5 seconds when spoken)
+   - All scenes together form ONE complete, cohesive story
+   - Each scene must include:
+     * Characters involved in this scene
+     * Visual description (what we see on screen - in Egyptian dialect)
+     * Dialogue/narration (what is spoken - in Egyptian dialect - عامية مصرية)
+     * Voice tone for EACH character using emojis (e.g., 😊 happy, 😢 sad, 😱 scared, 😤 angry, 🤔 thoughtful, 😎 cool, 🥺 pleading, 😂 laughing, 😨 worried, 🤗 warm)
+
+Story Guidelines:
+- Make the story engaging and attractive
+- Each scene should be independent enough to stand alone visually
+- But all scenes must connect to tell one complete narrative arc
+- Use vivid visual descriptions
+- Make characters memorable and relatable
+- Use natural Egyptian slang and expressions (عامية مصرية أصيلة)
+
+Output must be in this exact JSON format:
+{
+  "characters": [
+    {
+      "name": "اسم الشخصية (باللهجة المصرية)",
+      "description": "الوصف الكامل (باللهجة المصرية)",
+      "role": "دور الشخصية في القصة (باللهجة المصرية)"
+    }
+  ],
+  "scenes": [
+    {
+      "sceneNumber": 1,
+      "characters": ["الشخصية1", "الشخصية2"],
+      "visualDescription": "وصف المشهد البصري (باللهجة المصرية)",
+      "dialogue": "الحوار المنطوق - 10 كلمة كحد أقصى (باللهجة المصرية العامية)",
+      "voiceTones": {
+        "الشخصية1": "😊",
+        "الشخصية2": "🤔"
+      },
+      "duration": "5 ثواني"
+    }
+  ]
+}
+
+IMPORTANT: 
+- ALL TEXT must be in EGYPTIAN DIALECT (اللهجة المصرية العامية)
+- 'dialogue' must fit in 5 seconds (10-15 words max)
+- 'voiceTones' must use emojis to express emotion for each character
+- All scenes together must form ONE complete story
+- Generate exactly ${numberOfScenes} scenes
+- Use natural Egyptian expressions like: يلّا، طب، ماشي، يا سلام، ازيك، etc.`;
+
+        console.log('🚀 Calling OpenRouter API with model:', model);
+
+
+        const completion = await openai.chat.completions.create({
+            model: model,
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a master storyteller and scriptwriter. You create engaging, cohesive stories with memorable characters in authentic Egyptian dialect (اللهجة المصرية العامية). You always output valid JSON."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            response_format:{ type: "json_object" },
+            temperature: 0.8,
+            max_tokens: 5000,
+        });
+
+        const aiResponse = completion.choices[0].message.content;
+        console.log('✅ AI Response received');
+
+        let parsedData;
+        try {
+            parsedData = JSON.parse(aiResponse);
+        } catch (parseError) {
+            console.error('❌ JSON Parse Error:', parseError);
+            console.log('AI Response:', aiResponse);
+            throw new Error('فشل في تحليل استجابة الذكاء الاصطناعي. الرجاء المحاولة مرة أخرى.');
+        }
+
+        console.log('📦 Parsed data:', parsedData);
+
+
+        let characters = findValue(parsedData, [
+            'characters', 'Characters', 'الشخصيات', 'شخصيات', 'cast', 'Cast'
+        ]) || [];
+
+        let scenes = findValue(parsedData, [
+            'scenes', 'Scenes', 'المشاهد', 'مشاهد', 'story', 'Story'
+        ]) || [];
+
+        if (!Array.isArray(characters) || characters.length === 0) {
+            console.error('❌ No characters found in response');
+            throw new Error('لم يتم إنشاء الشخصيات. الرجاء المحاولة مرة أخرى.');
+        }
+
+        if (!Array.isArray(scenes) || scenes.length === 0) {
+            console.error('❌ No scenes found in response');
+            throw new Error('لم يتم إنشاء المشاهد. الرجاء المحاولة مرة أخرى.');
+        }
+
+        const validCharacters = characters.map(char => {
+            return {
+                name: findValue(char, ['name', 'Name', 'الاسم', 'اسم']) || '',
+                description: findValue(char, ['description', 'Description', 'الوصف', 'وصف']) || '',
+                role: findValue(char, ['role', 'Role', 'الدور', 'دور']) || ''
+            };
+        });
+
+        const validScenes = scenes.map(scene => {
+            return {
+                sceneNumber: findValue(scene, ['sceneNumber', 'scene_number', 'SceneNumber', 'number', 'رقم_المشهد', 'رقم']) || 0,
+                characters: findValue(scene, ['characters', 'Characters', 'الشخصيات', 'شخصيات']) || [],
+                visualDescription: findValue(scene, ['visualDescription', 'visual_description', 'VisualDescription', 'visual', 'الوصف_البصري', 'وصف_بصري']) || '',
+                dialogue: findValue(scene, ['dialogue', 'Dialogue', 'text', 'الحوار', 'حوار', 'النص']) || '',
+                voiceTones: findValue(scene, ['voiceTones', 'voice_tones', 'VoiceTones', 'tones', 'النبرات', 'نبرات']) || {},
+                duration: findValue(scene, ['duration', 'Duration', 'المدة', 'مدة']) || '5 ثواني'
+            };
+        });
+
+        console.log(`✅ Successfully generated ${validCharacters.length} characters and ${validScenes.length} scenes`);
+
+        return {
+            characters: validCharacters,
+            scenes: validScenes
+        };
+
+    } catch (error) {
+        handleError(error);
     }
 };
