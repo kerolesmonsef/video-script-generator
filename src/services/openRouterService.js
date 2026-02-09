@@ -1,17 +1,17 @@
 import OpenAI from 'openai';
-import {OPENROUTER_CONFIG, isOpenRouterConfigured} from '../config/openRouterConfig';
+import {OPENROUTER_CONFIG} from '../config/openRouterConfig';
 import {findValue, handleError} from "./helpers.js";
 import { saveIdea } from './firebaseService';
 
-const openai = new OpenAI({
-    apiKey: OPENROUTER_CONFIG.apiKey,
-    baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: {
-        "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : '',
-        "X-Title": "Video Script Generator",
-    },
-    dangerouslyAllowBrowser: true
-});
+const getOpenIoObject = () => new OpenAI({
+        apiKey: OPENROUTER_CONFIG.apiKey,
+        baseURL: "https://openrouter.ai/api/v1",
+        defaultHeaders: {
+            "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : '',
+            "X-Title": "Video Script Generator",
+        },
+        dangerouslyAllowBrowser: true
+    });
 
 const SCRIPT_SCHEMA = {
     type: "object",
@@ -47,7 +47,7 @@ const SCRIPT_SCHEMA = {
 };
 
 
-export const generateVideoScripts = async (idea, numberOfScripts, model = OPENROUTER_CONFIG.defaultModel) => {
+export const generateAdviceScript = async (idea, numberOfScripts, model = OPENROUTER_CONFIG.defaultModel) => {
     try {
         if (!idea || idea.trim().length === 0) {
             throw new Error('الرجاء إدخال فكرة الفيديو');
@@ -56,11 +56,6 @@ export const generateVideoScripts = async (idea, numberOfScripts, model = OPENRO
         if (numberOfScripts < 1 || numberOfScripts > 10) {
             throw new Error('عدد السكريبتات يجب أن يكون بين 1 و 10');
         }
-
-        if (!isOpenRouterConfigured) {
-            throw new Error('⚠️ الرجاء تكوين مفتاح OpenRouter API في ملف openRouterConfig.js\n\nاتبع الخطوات في SETUP_INSTRUCTIONS.md');
-        }
-
 
         const prompt = `You are a dual-role expert: A Viral Social Media Scriptwriter AND a Pixar-style Art Director.
 Task: Generate ${numberOfScripts} unique video ideas based on the topic: "${idea}".
@@ -96,7 +91,7 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
 
         const supportsStructuredOutput = model.includes('gpt-4') || model.includes('gpt-3.5');
 
-        const completion = await openai.chat.completions.create({
+        const completion = await getOpenIoObject().chat.completions.create({
             model: model,
             messages: [
                 {
@@ -244,18 +239,23 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
     }
 };
 
-export const generateImagePrompts = async (idea, numberOfImages, model = OPENROUTER_CONFIG.defaultModel) => {
+export const generateImagePrompts = async (idea, numberOfImages, model = OPENROUTER_CONFIG.defaultModel,characterType = 'human_object') => {
     try {
-        if (!idea || idea.trim().length === 0) {
-            throw new Error('الرجاء إدخال فكرة الصورة');
-        }
 
+        const characterDescriptions = {
+            'human': 'A single human character with expressive features, detailed facial expressions, realistic proportions, and natural human anatomy',
+            'object_as_human': 'A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose',
+            'object': 'A simple inanimate object with no human-like limbs or body parts, featuring only cute expressive eyes and a charming mouth, maintaining its original object form and structure'
+        };
+        const subjectDescription = characterDescriptions[characterType];
+
+        // - Subject: A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose.
         const prompt = `You are a world-class Pixar-style Art Director and Prompt Engineer.
 Task: Generate ${numberOfImages} unique image generation prompts based on the topic: "${idea}".
 
 Strict Style Guidelines:
 - Style: High-end Pixar/Disney 3D animation, rendered with Octane Render for ultra-photorealistic textures.
-- Subject: A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose.
+- Subject: ${subjectDescription}.
 - Character Design: The object should have a cute, appealing cartoon appearance with smooth, rounded features typical of Pixar characters, while maintaining clear human-like limbs and posture.
 - Technicals: 8k resolution, vibrant balanced colors, cinematic high-fidelity detail, subsurface scattering, and dramatic cinematic lighting (key, fill, and rim light).
 - Composition: Shallow depth of field (bokeh blur) to focus on the character in a visually rich environment.
@@ -271,7 +271,7 @@ Output MUST be in this exact JSON format:
 }
 No other fields (benefits, scripts, etc.) are allowed.`;
 
-        const completion = await openai.chat.completions.create({
+        const completion = await getOpenIoObject().chat.completions.create({
             model: model,
             messages: [
                 {
@@ -316,10 +316,6 @@ No other fields (benefits, scripts, etc.) are allowed.`;
 
 export const generateVideoStory = async (idea, numberOfScenes, model = OPENROUTER_CONFIG.defaultModel) => {
     try {
-        if (!isOpenRouterConfigured) {
-            throw new Error('⚠️ الرجاء تكوين مفتاح OpenRouter API في ملف openRouterConfig.js\n\nاتبع الخطوات في SETUP_INSTRUCTIONS.md');
-        }
-
         const prompt = `You are an expert storyteller and scriptwriter specializing in creating engaging video narratives in authentic Egyptian dialect.
 
 Task: Create a complete, cohesive video story based on the topic: "${idea}".
@@ -332,8 +328,8 @@ Requirements:
 1. **Characters:**
    - Create a cast of characters needed for this story
    - Each character must have:
-     * Name (in Egyptian dialect)
-     * Description (physical appearance, personality - in Egyptian dialect)
+     * Name (the name of the character )
+     * Description (physical appearance, personality - in arabic dialect)
      * Role in the story (their purpose/function - in Egyptian dialect)
      * **characterImagePrompt**: A SIMPLE English prompt to generate the character's image (5-10 words max)
        Example: "A picture of a cute little strawberry standing up"
@@ -405,7 +401,7 @@ IMPORTANT:
 
         console.log('🚀 Calling OpenRouter API with model:', model);
 
-        const completion = await openai.chat.completions.create({
+        const completion = await getOpenIoObject().chat.completions.create({
             model: model,
             messages: [
                 {

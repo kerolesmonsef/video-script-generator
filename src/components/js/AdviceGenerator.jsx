@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
-import { generateVideoScripts } from '../../services/openRouterService.js';
+import { generateAdviceScript } from '../../services/openRouterService.js';
 import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
 import ModelSelector from './ModelSelector.jsx';
-import '../css/ScriptGenerator.scss';
+import '../css/AdviceGenerator.scss';
 
-const ScriptGenerator = ({ onScriptsGenerated }) => {
+const AdviceGenerator = ({ onScriptsGenerated }) => {
   const [idea, setIdea] = useState('');
   const [numberOfScripts, setNumberOfScripts] = useState(1);
   const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
@@ -23,7 +23,7 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
     setError(null);
 
     try {
-      const generatedScripts = await generateVideoScripts(idea, numberOfScripts, selectedModel);
+      const generatedScripts = await generateAdviceScript(idea, numberOfScripts, selectedModel);
 
       onScriptsGenerated(generatedScripts, idea, numberOfScripts, selectedModel);
 
@@ -116,5 +116,5 @@ const ScriptGenerator = ({ onScriptsGenerated }) => {
   );
 };
 
-export default ScriptGenerator;
+export default AdviceGenerator;
 

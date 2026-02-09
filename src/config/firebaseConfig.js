@@ -11,25 +11,20 @@ const firebaseConfig = {
   appId: "1:843356439965:web:b9e75e7f428165592b5b74"
 };
 
-const isConfigured = firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY" &&
-                     firebaseConfig.projectId !== "your-project-id";
 
 let app;
 let db;
 
-if (isConfigured) {
-  try {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    console.log('✅ Firebase initialized successfully');
-  } catch (error) {
-    console.error('❌ Firebase initialization failed:', error);
-    console.error('Please check your Firebase configuration in src/config/firebaseConfig.js');
-  }
-} else {
-  console.warn('⚠️ Firebase not configured. Please update src/config/firebaseConfig.js with your credentials.');
-  console.warn('See SETUP_INSTRUCTIONS.md for detailed setup guide.');
+
+try {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  console.log('✅ Firebase initialized successfully');
+} catch (error) {
+  console.error('❌ Firebase initialization failed:', error);
+  console.error('Please check your Firebase configuration in src/config/firebaseConfig.js');
 }
 
-export { db, isConfigured };
+
+export { db };
 

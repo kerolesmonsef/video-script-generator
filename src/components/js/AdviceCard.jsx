@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { FaCopy, FaCheck, FaClock, FaImage } from 'react-icons/fa';
-import '../css/ScriptCard.scss';
+import '../css/AdviceCard.scss';
 
-const ScriptCard = ({ script, index }) => {
+const AdviceCard = ({ script, index }) => {
   const [copied, setCopied] = useState(false);
   const [imageCopied, setImageCopied] = useState(false);
 
@@ -107,5 +107,5 @@ Image Prompt: ${script.imagePrompt || ''}
   );
 };
 
-export default ScriptCard;
+export default AdviceCard;
 

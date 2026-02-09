@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaLightbulb, FaVideo, FaImage, FaBook } from 'react-icons/fa';
+import { FaLightbulb, FaVideo, FaImage, FaBook, FaCog } from 'react-icons/fa';
 import '../css/Sidebar.scss';
 
 const Sidebar = () => {
@@ -15,22 +15,13 @@ const Sidebar = () => {
       </div>
 
       <div className="sidebar-links">
-        <NavLink to="/" end
+        <NavLink to="/scripts" end
           className={({ isActive }) =>
             `sidebar-link ${isActive ? 'active' : ''}`
           }
         >
           <FaLightbulb />
           <span>نصائح (Advice)</span>
-        </NavLink>
-
-        <NavLink to="/scripts"
-          className={({ isActive }) =>
-            `sidebar-link ${isActive ? 'active' : ''}`
-          }
-        >
-          <FaVideo />
-          <span>مولد السكريبتات</span>
         </NavLink>
 
         <NavLink to="/cartoon-images"
@@ -49,6 +40,15 @@ const Sidebar = () => {
         >
           <FaBook />
           <span>مولد قصص الفيديو</span>
+        </NavLink>
+
+        <NavLink to="/settings"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <FaCog />
+          <span>الإعدادات (Settings)</span>
         </NavLink>
       </div>
 

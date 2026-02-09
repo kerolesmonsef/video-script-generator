@@ -80,7 +80,7 @@ const VideoStoryGenerator = ({ onStoryGenerated }) => {
                             value={numberOfScenes}
                             onChange={handleNumberChange}
                             min="1"
-                            max="10"
+                            max="100"
                             disabled={loading}
                             required
                         />
@@ -137,6 +137,16 @@ const VideoStoryGenerator = ({ onStoryGenerated }) => {
 
                     {storyData.scenes && storyData.scenes.length > 0 && (
                         <div className="scenes-section">
+                            <div>
+                                <h3>🎬 الوصف البصري</h3>
+                                <ul>
+                                    {storyData.scenes.map((scene, index) => (
+                                        <li key={index}>
+                                            <strong>المشهد {index + 1}:</strong> {scene.visualDescription}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                             <h3>🎬 المشاهد</h3>
                             <div className="scenes-list">
                                 {storyData.scenes.map((scene, index) => (

@@ -117,6 +117,17 @@
     line-height: 1.6;
 }
 
+.generated-image-section {
+    background: linear-gradient(135deg, var(--success-gradient-start) 0%, var(--success-gradient-end) 100%);
+    border-right-color: var(--success-color);
+    padding: 1.25rem;
+}
+
+.generated-image-section h4 {
+    color: var(--success-dark);
+    margin-bottom: 1rem;
+}
+
 .copy-button {
     background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
     color: var(--white);

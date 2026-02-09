@@ -1,0 +1,128 @@
+.cloudflare-text-to-image {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
+  position: relative;
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(0, 123, 255, 0.1);
+      border-top-color: #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    p {
+      margin: 0;
+      color: #495057;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+
+    .error-message {
+      color: #dc3545;
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .retry-button {
+      padding: 0.5rem 1.5rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+
+  .image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .generated-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.95rem;
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    min-height: 250px;
+
+    .loading-container {
+      padding: 1.5rem;
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+

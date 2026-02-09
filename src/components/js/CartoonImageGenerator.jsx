@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaMagic, FaLightbulb, FaHashtag, FaRobot } from 'react-icons/fa';
+import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
 import { generateImagePrompts } from '../../services/openRouterService.js';
 import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
 import '../css/CartoonImageGenerator.scss';
@@ -9,6 +9,7 @@ const CartoonImageGenerator = ({ onImagesGenerated }) => {
     const [idea, setIdea] = useState('');
     const [numberOfImages, setNumberOfImages] = useState(1);
     const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
+    const [cartoonType, setCartoonType] = useState('human');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -23,9 +24,9 @@ const CartoonImageGenerator = ({ onImagesGenerated }) => {
         setError(null);
 
         try {
-            const generatedImages = await generateImagePrompts(idea, numberOfImages, selectedModel);
+            const generatedImages = await generateImagePrompts(idea, numberOfImages, selectedModel, cartoonType);
 
-            onImagesGenerated(generatedImages, idea, numberOfImages, selectedModel);
+            onImagesGenerated(generatedImages, idea, numberOfImages, selectedModel, cartoonType);
 
         } catch (err) {
             console.error('Error generating image prompts:', err);
@@ -41,76 +42,99 @@ const CartoonImageGenerator = ({ onImagesGenerated }) => {
     };
 
     return (
-        <div className="cartoon-image-generator">
-            <div className="generator-header">
-                <h1>🎨 مولد صور الكرتون</h1>
-                <p>إنشاء برومبتات صور كرتونية احترافية بالذكاء الاصطناعي</p>
+        <div className="container py-4">
+            <div className="text-center mb-4 animate-fade-in">
+                <h1 className="display-4 fw-bold gradient-text mb-2">🎨 مولد صور الكرتون</h1>
+                <p className="lead text-muted">إنشاء برومبتات صور كرتونية احترافية بالذكاء الاصطناعي</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="generator-form">
-                <div className="form-group">
-                    <label htmlFor="idea">
-                        <FaLightbulb /> فكرة الصورة
-                    </label>
-                    <textarea
-                        id="idea"
-                        value={idea}
-                        onChange={(e) => setIdea(e.target.value)}
-                        placeholder="مثال: فواكه كرتونية بوجوه معبرة وعيون لامعة"
-                        rows="4"
-                        disabled={loading}
-                        required
-                    />
-                </div>
-
-                <div className="form-row">
-                    <div className="form-group">
-                        <label htmlFor="numberOfImages">
-                            <FaHashtag /> عدد الصور
+            <form onSubmit={handleSubmit} className="card shadow-lg border-0 animate-slide-up">
+                <div className="card-body p-4">
+                    <div className="mb-4">
+                        <label htmlFor="idea" className="form-label d-flex align-items-center gap-2 fw-semibold">
+                            <FaLightbulb className="text-primary" /> فكرة الصورة
                         </label>
-                        <input
-                            type="number"
-                            id="numberOfImages"
-                            value={numberOfImages}
-                            onChange={handleNumberChange}
-                            min="1"
-                            max="10"
+                        <textarea
+                            id="idea"
+                            className="form-control form-control-lg"
+                            value={idea}
+                            onChange={(e) => setIdea(e.target.value)}
+                            placeholder="مثال: فواكه كرتونية بوجوه معبرة وعيون لامعة"
+                            rows="4"
                             disabled={loading}
                             required
                         />
-                        <small>من 1 إلى 10 صور</small>
                     </div>
 
-                    <ModelSelector
-                        selectedModel={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value)}
-                        disabled={loading}
-                    />
-                </div>
+                    <div className="row g-3 mb-4">
+                        <div className="col-md-4">
+                            <label htmlFor="numberOfImages" className="form-label d-flex align-items-center gap-2 fw-semibold">
+                                <FaHashtag className="text-primary" /> عدد الصور
+                            </label>
+                            <input
+                                type="number"
+                                id="numberOfImages"
+                                className="form-control"
+                                value={numberOfImages}
+                                onChange={handleNumberChange}
+                                min="1"
+                                max="10"
+                                disabled={loading}
+                                required
+                            />
+                            <small className="form-text text-muted">من 1 إلى 10 صور</small>
+                        </div>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="error-message">
-                        ❌ {error}
+                        <div className="col-md-4">
+                            <label htmlFor="cartoonType" className="form-label fw-semibold">
+                                نوع الكرتون
+                            </label>
+                            <select
+                                id="cartoonType"
+                                className="form-select"
+                                value={cartoonType}
+                                onChange={(e) => setCartoonType(e.target.value)}
+                                disabled={loading}
+                                required
+                            >
+                                <option value="human">إنسان</option>
+                                <option value="object_as_human">جماد على شكل إنسان</option>
+                                <option value="object">جماد</option>
+                            </select>
+                        </div>
+
+                        <div className="col-md-4">
+                            <ModelSelector
+                                selectedModel={selectedModel}
+                                onChange={(e) => setSelectedModel(e.target.value)}
+                                disabled={loading}
+                            />
+                        </div>
                     </div>
-                )}
 
-                <button
-                    type="submit"
-                    className="generate-button"
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <span className="spinner"></span>
-                            جاري الإنشاء...
-                        </>
-                    ) : (
-                        <>
-                            <FaMagic /> إنشاء البرومبتات
-                        </>
+                    {error && (
+                        <div className="alert alert-danger d-flex align-items-center animate-shake" role="alert">
+                            <span>❌ {error}</span>
+                        </div>
                     )}
-                </button>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2 gradient-btn"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                جاري الإنشاء...
+                            </>
+                        ) : (
+                            <>
+                                <FaMagic /> إنشاء البرومبتات
+                            </>
+                        )}
+                    </button>
+                </div>
             </form>
         </div>
     );

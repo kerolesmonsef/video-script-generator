@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { FaHistory, FaTimes, FaTrash } from 'react-icons/fa';
-import ScriptGenerator from '../components/js/ScriptGenerator.jsx';
-import ScriptCard from '../components/js/ScriptCard.jsx';
+import AdviceGenerator from '../components/js/AdviceGenerator.jsx';
+import AdviceCard from '../components/js/AdviceCard.jsx';
 import { saveIdea, getIdeas, deleteIdea } from '../services/firebaseService';
 
-const ScriptsPage = () => {
+const AdvicesPage = () => {
   const [scripts, setScripts] = useState([]);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -142,7 +142,7 @@ const ScriptsPage = () => {
         )}
 
         <div className="content-area">
-          <ScriptGenerator onScriptsGenerated={handleScriptsGenerated} />
+          <AdviceGenerator onScriptsGenerated={handleScriptsGenerated} />
 
           {scripts.length > 0 && (
             <section className="scripts-container">
@@ -155,7 +155,7 @@ const ScriptsPage = () => {
               </div>
               <div className="scripts-grid">
                 {scripts.map((script, index) => (
-                  <ScriptCard key={index} script={script} index={index} />
+                  <AdviceCard key={index} script={script} index={index} />
                 ))}
               </div>
             </section>
@@ -179,4 +179,4 @@ const ScriptsPage = () => {
   );
 };
 
-export default ScriptsPage;
+export default AdvicesPage;

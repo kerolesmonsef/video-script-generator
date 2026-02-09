@@ -70,7 +70,7 @@ Created a new page for generating cartoon image prompts using AI, following the 
 - 2-second timeout before reverting to original state
 
 ### 3. **Reusable Design**
-- ImageCard follows the same pattern as ScriptCard
+- ImageCard follows the same pattern as AdviceCard
 - Can be easily extended or modified
 - Clean separation of concerns
 
@@ -104,7 +104,7 @@ Created a new page for generating cartoon image prompts using AI, following the 
 
 ## Architecture Pattern
 
-Follows the same pattern as ScriptGenerator:
+Follows the same pattern as AdviceGenerator:
 ```
 Page Component (CartoonImagesPage)
   ├── Generator Component (CartoonImageGenerator)

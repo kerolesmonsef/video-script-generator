@@ -1,9 +1,9 @@
-
+import {getConfig} from "../services/firebaseService";
 
 export const OPENROUTER_CONFIG = {
-  apiKey: "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", // Get from https://openrouter.ai/keys
+  apiKey: null,
   apiUrl: "https://openrouter.ai/api/v1/chat/completions",
-  defaultModel: "arcee-ai/trinity-large-preview:free", // Recommended for Arabic
+  defaultModel: "arcee-ai/trinity-large-preview:free", 
 
 
   models: [
@@ -17,13 +17,8 @@ export const OPENROUTER_CONFIG = {
   ]
 };
 
-
-export const isOpenRouterConfigured = OPENROUTER_CONFIG.apiKey !== "YOUR_OPENROUTER_API_KEY" &&
-  OPENROUTER_CONFIG.apiKey.startsWith("sk-or-");
-
-if (!isOpenRouterConfigured) {
-  console.warn('⚠️ OpenRouter API key not configured. Please update src/config/openRouterConfig.js');
-  console.warn('Get your API key from: https://openrouter.ai/keys');
-  console.warn('See SETUP_INSTRUCTIONS.md for detailed setup guide.');
-}
+(async () => {
+    OPENROUTER_CONFIG.apiKey = await getConfig("openRouterToken");
+  console.log(OPENROUTER_CONFIG);
+})();
 
