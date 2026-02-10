@@ -190,6 +190,10 @@
     .characters-grid {
         grid-template-columns: 1fr;
     }
+
+    .environments-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {

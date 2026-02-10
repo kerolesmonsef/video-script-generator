@@ -85,7 +85,6 @@ Output must be in this exact JSON format:
   "scripts": [
     {
       "visualDescription": "Brief visual scene description for the editor (Arabic)",
-      "voiceTone": "Specific voice acting instruction (e.g., High-pitched, Deep, Fast) (Arabic)",
       "voiceText": "The spoken script (Egyptian Arabic - 5s max)",
       "imagePrompt": "Detailed English prompt for Midjourney/DALL-E depicting a Pixar-style inanimate object related to the script.",
       "benefit": "One clear benefit of this tip (Arabic)",
@@ -333,7 +332,6 @@ export const generateVideoStory = async (idea, numberOfScenes, provider = LLM_CO
         const prompt = `You are an expert storyteller and scriptwriter specializing in creating engaging video narratives in authentic Egyptian dialect.
 
 Task: Create a complete, cohesive video story based on the topic: "${idea}".
-The story must be divided into exactly ${numberOfScenes} scenes.
 
 **CRITICAL: ALL TEXT MUST BE IN AUTHENTIC EGYPTIAN DIALECT (اللهجة المصرية العامية)**
 
@@ -347,11 +345,13 @@ Requirements:
      * Role in the story (their purpose/function - in Egyptian dialect)
      * **characterImagePrompt**: A SIMPLE English prompt to generate the character's image (5-10 words max)
        Example: "A picture of a cute little strawberry standing up"
-       Example: "Picture of a long banana and a standing man"
-       Example: "Picture of an evil apple with an angry face"
-
-2. **Scenes:**
-   - Create exactly ${numberOfScenes} scenes
+       
+2. **ENVIRONMENTS (2-4 Locations):**
+   - Create distinct locations that serve as the primary settings for the scenes.
+   - Each environment must be directly linked to the story's events.
+   - Requirement: Ensure the 'environmentPrompt' captures the specific Pixar-style 3D aesthetic (8k, cinematic) for consistent backgrounds.
+   
+3. **Scenes:**
    - Each scene MUST be exactly 5 seconds long
    - Each scene should contain 10-15 words maximum (to fit naturally in 5 seconds when spoken)
    - All scenes together form ONE complete, cohesive story
@@ -359,13 +359,10 @@ Requirements:
      * Characters involved in this scene
      * Visual description (what we see on screen - in Egyptian dialect)
      * Dialogue/narration (what is spoken - in Egyptian dialect - عامية مصرية)
-     * Voice tone for EACH character using emojis (e.g., 😊 happy, 😢 sad, 😱 scared, 😤 angry, 🤔 thoughtful, 😎 cool, 🥺 pleading, 😂 laughing, 😨 worried, 🤗 warm)
      * **sceneImagePrompt**: A SIMPLE English prompt describing the scene composition (10-15 words max)
-       Example: "A picture of a little strawberry standing in a romantic pose with a long banana in a garden"
-       Example: "Picture of an evil apple talking to a big strawberry dad in a house"
-     * **grokPrompt**: A DETAILED English description of the action, movement, and emotion for AI video generation (20-30 words) Dialogue: [الحوار بالعربي المصري من حقل dialogue]
-       Example: "The strawberry looks lovingly into the banana's eyes with a warm smile, while the banana leans closer with a gentle, caring expression in a sunny garden"
-       Example: "The evil apple whispers secretly to the stern father strawberry, with suspicious gestures and a cunning smirk on his face"
+     * **grokPrompt**: A DETAILED English description of the action, movement, emotions, AND voice delivery style of each speaking character (20-40 words). 
+       The voice description must be expressive and cinematic (e.g., low trembling voice, confident energetic tone, sarcastic relaxed delivery, breathless whisper, etc.) 
+       Dialogue: [الحوار بالعربي المصري من حقل dialogue]
 
 Story Guidelines:
 - Make the story engaging and attractive
@@ -373,31 +370,36 @@ Story Guidelines:
 - But all scenes must connect to tell one complete narrative arc
 - Use vivid visual descriptions
 - Make characters memorable and relatable
-- Use natural Egyptian slang and expressions (عامية مصرية أصيلة)
+- Use natural Egyptian Arabic slang and expressions
 
 Output must be in this exact JSON format:
-
 {
   "characters": [
     {
-      "name": "اسم الشخصية (باللهجة المصرية)",
-      "description": "الوصف الكامل (باللهجة المصرية)",
-      "role": "دور الشخصية في القصة (باللهجة المصرية)",
-      "characterImagePrompt": "صورة [وصف بسيط جدا للشخصية بالعامية المصرية - 5-10 كلمات]"
+      "name": "Name (Egyptian Arabic)",
+      "description": "Visual description in Arabic (Focus on: Clothes, Color, Size, Unique features). E.g., 'قطة بيضا صغيرة لابسة فيونكة حمراء'",
+      "role": "Role (Egyptian Arabic)",
+      "characterImagePrompt": "Detailed English visual prompt (5-20 words). MUST include: Species/Type, Main Color, Clothing/Accessories, Size/Height, Texture. Example: 'A tiny white fluffy kitten wearing a red bow tie, big blue eyes, soft lighting, 3D render'"
+   }
+  ],
+  "environments": [
+    {
+      "id": "env_001",
+      "name": "Location Name (Egyptian Arabic)",
+      "description": "Brief description (Egyptian Arabic)",
+      "mood": "Atmosphere (e.g., حيوي, هادئ)",
+      "lightingType": "Lighting type (e.g., إضاءة صباحية, غروب)",
+      "environmentPrompt": "Detailed English prompt (30-40 words) for background ONLY. Keywords: Pixar-style 3D, 8k, cinematic lighting, photorealistic textures, soft bokeh, vibrant colors. NO CHARACTERS."
     }
   ],
   "scenes": [
     {
       "sceneNumber": 1,
-      "characters": ["الشخصية1", "الشخصية2"],
-      "visualDescription": "وصف المشهد البصري (باللهجة المصرية)",
-      "dialogue": "الحوار المنطوق - 10 كلمة كحد أقصى (باللهجة المصرية العامية)",
-      "voiceTones": {
-        "الشخصية1": "😊",
-        "الشخصية2": "🤔"
-      },
+      "characters": ["Name1"],
+      "visualDescription": "Visual description (Egyptian Arabic)",
+      "dialogue": "الحوار المنطوق - 10-15 كلمة كحد أقصى (باللهجة المصرية العامية)",
       "sceneImagePrompt": "صورة [وصف المشهد بالعامية - 10-15 كلمة - يشمل كل الشخصيات والمكان]",
-      "grokPrompt": "Detailed English description of actions, movements, emotions, and what happens in this scene for video generation (20-30 words) , Dialogue: [الحوار بالعربي المصري من حقل dialogue]"
+      "grokPrompt": "Action description using VISUAL TRAITS from 'characterImagePrompt' (NEVER use names). E.g., 'The tiny white kitten jumps...', NOT 'Mimi jumps'. End with: Dialogue: [Arabic Dialogue]"
     }
   ]
 }
@@ -405,14 +407,14 @@ Output must be in this exact JSON format:
 IMPORTANT: 
 - ALL Arabic TEXT must be in EGYPTIAN DIALECT (اللهجة المصرية العامية)
 - 'dialogue' must fit in 5 seconds (10-15 words max)
-- 'voiceTones' must use emojis to express emotion for each character
 - 'characterImagePrompt' must be SIMPLE and SHORT (5-10 words in Egyptian Arabic)
 - 'sceneImagePrompt' must be SIMPLE and include all characters in scene (10-15 words in Egyptian Arabic)
-- 'grokPrompt' must be DETAILED in English describing the action and emotion and the Dialogue: [الحوار بالعربي المصري من حقل dialogue]
+- 'grokPrompt' must include detailed voice style description in English (no emojis)
 - All scenes together must form ONE complete story
 - Generate exactly ${numberOfScenes} scenes
 - Use natural Egyptian expressions like: يلّا، طب، ماشي، يا سلام، ازيك, etc.`;
 
+        console.log({prompt})
         console.log('🚀 Calling LLM API with provider:', provider, 'model:', selectedModel);
 
         const completion = await getOpenAIClient(provider).chat.completions.create({
@@ -454,6 +456,10 @@ IMPORTANT:
             'characters', 'Characters', 'الشخصيات', 'شخصيات', 'cast', 'Cast'
         ]) || [];
 
+        let environments = findValue(parsedData, [
+            'environments', 'Environments', 'البيئات', 'بيئات', 'locations', 'Locations', 'الأماكن', 'أماكن'
+        ]) || [];
+
         let scenes = findValue(parsedData, [
             'scenes', 'Scenes', 'المشاهد', 'مشاهد', 'story', 'Story'
         ]) || [];
@@ -461,6 +467,11 @@ IMPORTANT:
         if (!Array.isArray(characters) || characters.length === 0) {
             console.error('❌ No characters found in response');
             throw new Error('لم يتم إنشاء الشخصيات. الرجاء المحاولة مرة أخرى.');
+        }
+
+        if (!Array.isArray(environments)) {
+            console.warn('⚠️ Environments is not an array, setting to empty array');
+            environments = [];
         }
 
         if (!Array.isArray(scenes) || scenes.length === 0) {
@@ -485,13 +496,30 @@ IMPORTANT:
             };
         });
 
+        const validEnvironments = environments.map(env => {
+            return {
+                id: findValue(env, ['id', 'Id', 'ID', 'المعرف', 'معرف']) || '',
+                name: findValue(env, ['name', 'Name', 'الاسم', 'اسم']) || '',
+                description: findValue(env, ['description', 'Description', 'الوصف', 'وصف']) || '',
+                mood: findValue(env, ['mood', 'Mood', 'atmosphere', 'Atmosphere', 'المزاج', 'مزاج']) || '',
+                lightingType: findValue(env, ['lightingType', 'lighting_type', 'LightingType', 'lighting', 'نوع_الإضاءة', 'إضاءة']) || '',
+                environmentPrompt: findValue(env, [
+                    'environmentPrompt',
+                    'environment_prompt',
+                    'EnvironmentPrompt',
+                    'prompt',
+                    'برومبت_البيئة',
+                    'برومبت_المكان'
+                ]) || ''
+            };
+        });
+
         const validScenes = scenes.map(scene => {
             return {
                 sceneNumber: findValue(scene, ['sceneNumber', 'scene_number', 'SceneNumber', 'number', 'رقم_المشهد', 'رقم']) || 0,
                 characters: findValue(scene, ['characters', 'Characters', 'الشخصيات', 'شخصيات']) || [],
                 visualDescription: findValue(scene, ['visualDescription', 'visual_description', 'VisualDescription', 'visual', 'الوصف_البصري', 'وصف_بصري']) || '',
                 dialogue: findValue(scene, ['dialogue', 'Dialogue', 'text', 'الحوار', 'حوار', 'النص']) || '',
-                voiceTones: findValue(scene, ['voiceTones', 'voice_tones', 'VoiceTones', 'tones', 'النبرات', 'نبرات']) || {},
                 sceneImagePrompt: findValue(scene, [
                     'sceneImagePrompt',
                     'scene_image_prompt',
@@ -513,13 +541,14 @@ IMPORTANT:
             };
         });
 
-        console.log(`✅ Successfully generated ${validCharacters.length} characters and ${validScenes.length} scenes`);
+        console.log(`✅ Successfully generated ${validCharacters.length} characters, ${validEnvironments.length} environments, and ${validScenes.length} scenes`);
 
         try {
             await saveIdea({
                 collection: 'videoStories',
                 model: {
                     characters,
+                    environments,
                     scenes,
                     provider,
                     model: selectedModel
@@ -532,6 +561,7 @@ IMPORTANT:
 
         return {
             characters: validCharacters,
+            environments: validEnvironments,
             scenes: validScenes
         };
 

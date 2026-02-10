@@ -1,0 +1,169 @@
+@use './variables' as *;
+
+.environment-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm) var(--black-10);
+    transition: var(--transition-base);
+    border: 2px solid var(--gray-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.environment-card:hover {
+    box-shadow: var(--shadow-md) var(--black-20);
+    transform: translateY(-2px);
+}
+
+.environment-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--gray-border);
+    position: relative;
+}
+
+.environment-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.5rem;
+}
+
+.environment-card-header h4 {
+    color: var(--gray-darker);
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 600;
+    flex: 1;
+}
+
+.copy-all-btn {
+    background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+    color: var(--white);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.copy-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm) var(--black-20);
+}
+
+.copy-all-btn.copied {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.environment-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.environment-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.field-header label {
+    color: var(--gray-darker);
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.environment-field p {
+    margin: 0;
+    color: var(--gray-dark);
+    line-height: 1.6;
+    padding: 0.75rem;
+    background: var(--white-95);
+    border-radius: var(--radius-sm);
+    border-right: 3px solid #28a745;
+}
+
+.environment-field .prompt-text {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    background: var(--gray-lighter);
+    border-right: 3px solid #20c997;
+}
+
+.copy-btn {
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    color: var(--gray-dark);
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.copy-btn:hover {
+    background: #28a745;
+    color: var(--white);
+    border-color: #28a745;
+}
+
+.copy-btn.copied {
+    background: #28a745;
+    color: var(--white);
+    border-color: #28a745;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .environment-card {
+        padding: 1rem;
+    }
+
+    .environment-card-header {
+        flex-wrap: wrap;
+    }
+
+    .copy-all-btn {
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+
+    .environment-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .environment-card-header h4 {
+        font-size: 1.1rem;
+    }
+}
+

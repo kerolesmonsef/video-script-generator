@@ -18,11 +18,7 @@ const SceneCard = ({ scene, index }) => {
     };
 
     const handleCopyAll = () => {
-        const voiceTonesText = scene.voiceTones
-            ? Object.entries(scene.voiceTones)
-                .map(([char, tone]) => `${char}: ${tone}`)
-                .join('\n')
-            : '';
+
 
         const textToCopy = `
 مشهد #${scene.sceneNumber || index + 1}
@@ -32,9 +28,6 @@ const SceneCard = ({ scene, index }) => {
 الوصف البصري: ${scene.visualDescription}
 
 الحوار: ${scene.dialogue}
-
-نبرات الصوت:
-${voiceTonesText}
 
 ${scene.sceneImagePrompt ? `برومبت الصورة: ${scene.sceneImagePrompt}` : ''}
 
@@ -113,33 +106,7 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
                     <p className="dialogue-text">{scene.dialogue}</p>
                 </div>
 
-                {/* Voice Tones */}
-                {scene.voiceTones && Object.keys(scene.voiceTones).length > 0 && (
-                    <div className="scene-field">
-                        <div className="field-header">
-                            <label>🎭 نبرات الصوت</label>
-                            <button
-                                className={`copy-btn ${copiedField === 'voiceTones' ? 'copied' : ''}`}
-                                onClick={() => handleCopy(
-                                    Object.entries(scene.voiceTones)
-                                        .map(([char, tone]) => `${char}: ${tone}`)
-                                        .join('\n'),
-                                    'voiceTones'
-                                )}
-                                title="نسخ نبرات الصوت"
-                            >
-                                {copiedField === 'voiceTones' ? <FaCheck /> : <FaCopy />}
-                            </button>
-                        </div>
-                        <div className="voice-tones">
-                            {Object.entries(scene.voiceTones).map(([character, tone], idx) => (
-                                <span key={idx} className="voice-tone-badge">
-                                    {character}: {tone}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
+
 
                 {/* Scene Image Prompt */}
                 {scene.sceneImagePrompt && (

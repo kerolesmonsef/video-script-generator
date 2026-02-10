@@ -4,6 +4,7 @@ import { generateVideoStory } from '../services/LLMService.js';
 import { LLM_CONFIG } from '../config/LLMConfig.js';
 import ModelSelector from '../components/js/ModelSelector.jsx';
 import CharacterCard from '../components/js/CharacterCard.jsx';
+import EnvironmentCard from '../components/js/EnvironmentCard.jsx';
 import SceneCard from '../components/js/SceneCard.jsx';
 import '../components/css/VideoStoryGenerator.scss';
 
@@ -141,6 +142,17 @@ const VideoStoryPage = () => {
                                         <div className="characters-grid">
                                             {storyData.characters.map((character, index) => (
                                                 <CharacterCard key={index} character={character} index={index} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {storyData.environments && storyData.environments.length > 0 && (
+                                    <div className="environments-section">
+                                        <h3>🌍 البيئات</h3>
+                                        <div className="environments-grid">
+                                            {storyData.environments.map((environment, index) => (
+                                                <EnvironmentCard key={index} environment={environment} index={index} />
                                             ))}
                                         </div>
                                     </div>
