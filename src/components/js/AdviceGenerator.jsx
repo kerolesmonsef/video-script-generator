@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
-import { generateAdviceScript } from '../../services/openRouterService.js';
-import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
+import { generateAdviceScript } from '../../services/LLMService.js';
+import { LLM_CONFIG } from '../../config/LLMConfig.js';
 import ModelSelector from './ModelSelector.jsx';
 import '../css/AdviceGenerator.scss';
 
 const AdviceGenerator = ({ onScriptsGenerated }) => {
   const [idea, setIdea] = useState('');
   const [numberOfScripts, setNumberOfScripts] = useState(1);
-  const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
+  const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
+  const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,9 +24,9 @@ const AdviceGenerator = ({ onScriptsGenerated }) => {
     setError(null);
 
     try {
-      const generatedScripts = await generateAdviceScript(idea, numberOfScripts, selectedModel);
+      const generatedScripts = await generateAdviceScript(idea, numberOfScripts, selectedProvider, selectedModel);
 
-      onScriptsGenerated(generatedScripts, idea, numberOfScripts, selectedModel);
+      onScriptsGenerated(generatedScripts, idea, numberOfScripts, selectedProvider, selectedModel);
 
     } catch (err) {
       console.error('Error generating scripts:', err);
@@ -82,8 +83,10 @@ const AdviceGenerator = ({ onScriptsGenerated }) => {
           </div>
 
           <ModelSelector
+            selectedProvider={selectedProvider}
             selectedModel={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
+            onProviderChange={(e) => setSelectedProvider(e.target.value)}
+            onModelChange={(e) => setSelectedModel(e.target.value)}
             disabled={loading}
           />
         </div>

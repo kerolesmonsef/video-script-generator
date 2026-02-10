@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaMagic, FaBook, FaHashtag } from 'react-icons/fa';
-import { generateVideoStory } from '../../services/openRouterService.js';
-import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
+import { generateVideoStory } from '../../services/LLMService.js';
+import { LLM_CONFIG } from '../../config/LLMConfig.js';
 import ModelSelector from './ModelSelector.jsx';
 import CharacterCard from './CharacterCard.jsx';
 import SceneCard from './SceneCard.jsx';
@@ -10,7 +10,8 @@ import '../css/VideoStoryGenerator.scss';
 const VideoStoryGenerator = ({ onStoryGenerated }) => {
     const [idea, setIdea] = useState('');
     const [numberOfScenes, setNumberOfScenes] = useState(10);
-    const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
+    const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
+    const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [storyData, setStoryData] = useState(null);
@@ -27,7 +28,7 @@ const VideoStoryGenerator = ({ onStoryGenerated }) => {
         setStoryData(null);
 
         try {
-            const generatedStory = await generateVideoStory(idea, numberOfScenes, selectedModel);
+            const generatedStory = await generateVideoStory(idea, numberOfScenes, selectedProvider, selectedModel);
             setStoryData(generatedStory);
 
             if (onStoryGenerated) {
@@ -88,8 +89,10 @@ const VideoStoryGenerator = ({ onStoryGenerated }) => {
                     </div>
 
                     <ModelSelector
+                        selectedProvider={selectedProvider}
                         selectedModel={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value)}
+                        onProviderChange={(e) => setSelectedProvider(e.target.value)}
+                        onModelChange={(e) => setSelectedModel(e.target.value)}
                         disabled={loading}
                     />
                 </div>

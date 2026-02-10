@@ -5,23 +5,32 @@ import '../components/css/SettingsPage.scss';
 
 const SettingsPage = () => {
     const [openRouterToken, setOpenRouterToken] = useState('');
+    const [chatanywhereToken, setChatanywhereToken] = useState('');
     const [loading, setLoading] = useState(false);
+    const [loadingChatanywhere, setLoadingChatanywhere] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [savedChatanywhere, setSavedChatanywhere] = useState(false);
     const [error, setError] = useState('');
+    const [errorChatanywhere, setErrorChatanywhere] = useState('');
 
     useEffect(() => {
-        const loadToken = async () => {
+        const loadTokens = async () => {
             try {
-                const token = await getConfig('openRouterToken');
-                if (token) {
-                    setOpenRouterToken(token);
+                const openRouterTokenValue = await getConfig('openRouterToken');
+                if (openRouterTokenValue) {
+                    setOpenRouterToken(openRouterTokenValue);
+                }
+
+                const chatanywhereTokenValue = await getConfig('chatanywhereToken');
+                if (chatanywhereTokenValue) {
+                    setChatanywhereToken(chatanywhereTokenValue);
                 }
             } catch (err) {
-                console.error('Error loading token:', err);
+                console.error('Error loading tokens:', err);
             }
         };
 
-        loadToken();
+        loadTokens();
     }, []);
 
     const handleSave = async () => {
@@ -45,6 +54,30 @@ const SettingsPage = () => {
             setError(err.message || 'Failed to save token');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSaveChatanywhere = async () => {
+        if (!chatanywhereToken.trim()) {
+            setErrorChatanywhere('Please enter a token');
+            return;
+        }
+
+        setLoadingChatanywhere(true);
+        setErrorChatanywhere('');
+        setSavedChatanywhere(false);
+
+        try {
+            await setConfig('chatanywhereToken', chatanywhereToken);
+            setSavedChatanywhere(true);
+
+            setTimeout(() => {
+                setSavedChatanywhere(false);
+            }, 3000);
+        } catch (err) {
+            setErrorChatanywhere(err.message || 'Failed to save token');
+        } finally {
+            setLoadingChatanywhere(false);
         }
     };
 
@@ -109,6 +142,59 @@ const SettingsPage = () => {
                             {saved && (
                                 <div className="success-message">
                                     Token saved successfully!
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="setting-item">
+                            <label htmlFor="chatanywhereToken" className="setting-label">
+                                ChatAnywhere API Token
+                            </label>
+                            <p className="setting-description">
+                                Enter your ChatAnywhere API token to enable additional AI models
+                            </p>
+
+                            <div className="input-group">
+                                <input
+                                    id="chatanywhereToken"
+                                    type="password"
+                                    className="setting-input"
+                                    placeholder="sk-..."
+                                    value={chatanywhereToken}
+                                    onChange={(e) => setChatanywhereToken(e.target.value)}
+                                    disabled={loadingChatanywhere}
+                                />
+
+                                <button
+                                    className={`save-button ${savedChatanywhere ? 'saved' : ''}`}
+                                    onClick={handleSaveChatanywhere}
+                                    disabled={loadingChatanywhere}
+                                >
+                                    {loadingChatanywhere ? (
+                                        <span className="loading-spinner"></span>
+                                    ) : savedChatanywhere ? (
+                                        <>
+                                            <FaCheck />
+                                            <span>Saved</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaSave />
+                                            <span>Save</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+
+                            {errorChatanywhere && (
+                                <div className="error-message">
+                                    {errorChatanywhere}
+                                </div>
+                            )}
+
+                            {savedChatanywhere && (
+                                <div className="success-message">
+                                    ChatAnywhere token saved successfully!
                                 </div>
                             )}
                         </div>

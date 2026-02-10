@@ -1,17 +1,22 @@
 import OpenAI from 'openai';
-import {OPENROUTER_CONFIG} from '../config/openRouterConfig';
-import {findValue, handleError} from "./helpers.js";
+import { LLM_CONFIG, LLM_PROVIDERS, getProviderConfig } from '../config/LLMConfig';
+import { findValue, handleError } from "./helpers.js";
 import { saveIdea } from './firebaseService';
 
-const getOpenIoObject = () => new OpenAI({
-        apiKey: OPENROUTER_CONFIG.apiKey,
-        baseURL: "https://openrouter.ai/api/v1",
+// Create OpenAI client based on provider
+const getOpenAIClient = (provider = LLM_CONFIG.defaultProvider) => {
+    const providerConfig = getProviderConfig(provider);
+
+    return new OpenAI({
+        apiKey: providerConfig.apiKey,
+        baseURL: providerConfig.apiUrl,
         defaultHeaders: {
             "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : '',
             "X-Title": "Video Script Generator",
         },
         dangerouslyAllowBrowser: true
     });
+};
 
 const SCRIPT_SCHEMA = {
     type: "object",
@@ -47,7 +52,7 @@ const SCRIPT_SCHEMA = {
 };
 
 
-export const generateAdviceScript = async (idea, numberOfScripts, model = OPENROUTER_CONFIG.defaultModel) => {
+export const generateAdviceScript = async (idea, numberOfScripts, provider = LLM_CONFIG.defaultProvider, model = null) => {
     try {
         if (!idea || idea.trim().length === 0) {
             throw new Error('الرجاء إدخال فكرة الفيديو');
@@ -56,6 +61,9 @@ export const generateAdviceScript = async (idea, numberOfScripts, model = OPENRO
         if (numberOfScripts < 1 || numberOfScripts > 10) {
             throw new Error('عدد السكريبتات يجب أن يكون بين 1 و 10');
         }
+
+        const providerConfig = getProviderConfig(provider);
+        const selectedModel = model || providerConfig.defaultModel;
 
         const prompt = `You are a dual-role expert: A Viral Social Media Scriptwriter AND a Pixar-style Art Director.
 Task: Generate ${numberOfScripts} unique video ideas based on the topic: "${idea}".
@@ -87,12 +95,12 @@ Output must be in this exact JSON format:
 }
 IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in ENGLISH and strictly follows the Pixar 3D object style guidelines.`;
 
-        console.log('🚀 Calling OpenRouter API with model:', model);
+        console.log('🚀 Calling LLM API with provider:', provider, 'model:', selectedModel);
 
-        const supportsStructuredOutput = model.includes('gpt-4') || model.includes('gpt-3.5');
+        const supportsStructuredOutput = selectedModel.includes('gpt-4') || selectedModel.includes('gpt-3.5');
 
-        const completion = await getOpenIoObject().chat.completions.create({
-            model: model,
+        const completion = await getOpenAIClient(provider).chat.completions.create({
+            model: selectedModel,
             messages: [
                 {
                     role: "system",
@@ -112,7 +120,7 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
                         strict: true
                     }
                 }
-                : {type: "json_object"},
+                : { type: "json_object" },
             temperature: 0.9,
             max_tokens: 3000,
         });
@@ -223,7 +231,8 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
                     idea,
                     numberOfScripts,
                     scripts: validScripts,
-                    model
+                    provider,
+                    model: selectedModel
                 }
             });
             console.log('✅ Scripts saved to Firebase');
@@ -239,8 +248,10 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
     }
 };
 
-export const generateImagePrompts = async (idea, numberOfImages, model = OPENROUTER_CONFIG.defaultModel,characterType = 'human_object') => {
+export const generateImagePrompts = async (idea, numberOfImages, provider = LLM_CONFIG.defaultProvider, model = null, characterType = 'human_object') => {
     try {
+        const providerConfig = getProviderConfig(provider);
+        const selectedModel = model || providerConfig.defaultModel;
 
         const characterDescriptions = {
             'human': 'A single human character with expressive features, detailed facial expressions, realistic proportions, and natural human anatomy',
@@ -249,7 +260,6 @@ export const generateImagePrompts = async (idea, numberOfImages, model = OPENROU
         };
         const subjectDescription = characterDescriptions[characterType];
 
-        // - Subject: A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose.
         const prompt = `You are a world-class Pixar-style Art Director and Prompt Engineer.
 Task: Generate ${numberOfImages} unique image generation prompts based on the topic: "${idea}".
 
@@ -271,8 +281,8 @@ Output MUST be in this exact JSON format:
 }
 No other fields (benefits, scripts, etc.) are allowed.`;
 
-        const completion = await getOpenIoObject().chat.completions.create({
-            model: model,
+        const completion = await getOpenAIClient(provider).chat.completions.create({
+            model: selectedModel,
             messages: [
                 {
                     role: "system",
@@ -283,7 +293,7 @@ No other fields (benefits, scripts, etc.) are allowed.`;
                     content: prompt
                 }
             ],
-            response_format: {type: "json_object"},
+            response_format: { type: "json_object" },
             temperature: 0.8,
         });
 
@@ -298,7 +308,8 @@ No other fields (benefits, scripts, etc.) are allowed.`;
                     idea,
                     numberOfImages,
                     images,
-                    model
+                    provider,
+                    model: selectedModel
                 }
             });
             console.log('✅ Image prompts saved to Firebase');
@@ -314,8 +325,11 @@ No other fields (benefits, scripts, etc.) are allowed.`;
     }
 };
 
-export const generateVideoStory = async (idea, numberOfScenes, model = OPENROUTER_CONFIG.defaultModel) => {
+export const generateVideoStory = async (idea, numberOfScenes, provider = LLM_CONFIG.defaultProvider, model = null) => {
     try {
+        const providerConfig = getProviderConfig(provider);
+        const selectedModel = model || providerConfig.defaultModel;
+
         const prompt = `You are an expert storyteller and scriptwriter specializing in creating engaging video narratives in authentic Egyptian dialect.
 
 Task: Create a complete, cohesive video story based on the topic: "${idea}".
@@ -399,10 +413,10 @@ IMPORTANT:
 - Generate exactly ${numberOfScenes} scenes
 - Use natural Egyptian expressions like: يلّا، طب، ماشي، يا سلام، ازيك, etc.`;
 
-        console.log('🚀 Calling OpenRouter API with model:', model);
+        console.log('🚀 Calling LLM API with provider:', provider, 'model:', selectedModel);
 
-        const completion = await getOpenIoObject().chat.completions.create({
-            model: model,
+        const completion = await getOpenAIClient(provider).chat.completions.create({
+            model: selectedModel,
             messages: [
                 {
                     role: "system",
@@ -413,7 +427,7 @@ IMPORTANT:
                     content: prompt
                 }
             ],
-            response_format: {type: "json_object"},
+            response_format: { type: "json_object" },
             temperature: 0.8,
             max_tokens: 6000,
         });
@@ -507,11 +521,13 @@ IMPORTANT:
                 model: {
                     characters,
                     scenes,
+                    provider,
+                    model: selectedModel
                 }
             });
-            console.log('✅ Image prompts saved to Firebase');
+            console.log('✅ Video story saved to Firebase');
         } catch (error) {
-            console.warn('⚠️ Failed to save image prompts to Firebase:', error);
+            console.warn('⚠️ Failed to save video story to Firebase:', error);
         }
 
         return {

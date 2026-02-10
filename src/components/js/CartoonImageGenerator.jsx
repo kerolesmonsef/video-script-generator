@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
-import { generateImagePrompts } from '../../services/openRouterService.js';
-import { OPENROUTER_CONFIG } from '../../config/openRouterConfig.js';
+import { generateImagePrompts } from '../../services/LLMService.js';
+import { LLM_CONFIG } from '../../config/LLMConfig.js';
 import '../css/CartoonImageGenerator.scss';
 import ModelSelector from "./ModelSelector.jsx";
 
 const CartoonImageGenerator = ({ onImagesGenerated }) => {
     const [idea, setIdea] = useState('');
     const [numberOfImages, setNumberOfImages] = useState(1);
-    const [selectedModel, setSelectedModel] = useState(OPENROUTER_CONFIG.defaultModel);
+    const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
+    const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
     const [cartoonType, setCartoonType] = useState('human');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -24,9 +25,9 @@ const CartoonImageGenerator = ({ onImagesGenerated }) => {
         setError(null);
 
         try {
-            const generatedImages = await generateImagePrompts(idea, numberOfImages, selectedModel, cartoonType);
+            const generatedImages = await generateImagePrompts(idea, numberOfImages, selectedProvider, selectedModel, cartoonType);
 
-            onImagesGenerated(generatedImages, idea, numberOfImages, selectedModel, cartoonType);
+            onImagesGenerated(generatedImages, idea, numberOfImages, selectedProvider, selectedModel, cartoonType);
 
         } catch (err) {
             console.error('Error generating image prompts:', err);
@@ -105,8 +106,10 @@ const CartoonImageGenerator = ({ onImagesGenerated }) => {
 
                         <div className="col-md-4">
                             <ModelSelector
+                                selectedProvider={selectedProvider}
                                 selectedModel={selectedModel}
-                                onChange={(e) => setSelectedModel(e.target.value)}
+                                onProviderChange={(e) => setSelectedProvider(e.target.value)}
+                                onModelChange={(e) => setSelectedModel(e.target.value)}
                                 disabled={loading}
                             />
                         </div>
