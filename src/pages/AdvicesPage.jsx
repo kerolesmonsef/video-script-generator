@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { FaHistory, FaTimes, FaTrash } from 'react-icons/fa';
-import AdviceGenerator from '../components/js/AdviceGenerator.jsx';
+import { FaHistory, FaTimes, FaTrash, FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
+import { generateAdviceScript } from '../services/LLMService.js';
+import { LLM_CONFIG } from '../config/LLMConfig.js';
+import ModelSelector from '../components/js/ModelSelector.jsx';
 import AdviceCard from '../components/js/AdviceCard.jsx';
-import { saveIdea, getIdeas, deleteIdea } from '../services/firebaseService';
+import { getIdeas, deleteIdea } from '../services/firebaseService';
+import '../components/css/AdviceGenerator.scss';
 
 const AdvicesPage = () => {
   const [scripts, setScripts] = useState([]);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [currentIdea, setCurrentIdea] = useState('');
+  const [idea, setIdea] = useState('');
+  const [numberOfScripts, setNumberOfScripts] = useState(1);
+  const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
+  const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadHistory = async () => {
     try {
@@ -23,10 +32,32 @@ const AdvicesPage = () => {
     loadHistory();
   }, []);
 
-  const handleScriptsGenerated = async (generatedScripts, idea) => {
-    setScripts(generatedScripts);
-    setCurrentIdea(idea);
-    setShowHistory(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!idea.trim()) {
+      setError('الرجاء إدخال فكرة الفيديو');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const generatedScripts = await generateAdviceScript(idea, numberOfScripts, selectedProvider, selectedModel);
+      setScripts(generatedScripts);
+      setCurrentIdea(idea);
+      setShowHistory(false);
+    } catch (err) {
+      console.error('Error generating scripts:', err);
+      setError(err.message || 'حدث خطأ أثناء إنشاء السكريبتات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNumberChange = (e) => {
+    const value = parseInt(e.target.value) || 1;
+    setNumberOfScripts(Math.min(10, Math.max(1, value)));
   };
 
   const handleLoadPreviousIdea = (idea) => {
@@ -142,7 +173,83 @@ const AdvicesPage = () => {
         )}
 
         <div className="content-area">
-          <AdviceGenerator onScriptsGenerated={handleScriptsGenerated} />
+          <div className="script-generator">
+            <div className="generator-header">
+              <h1>🎬 مولد سكريبتات الفيديو</h1>
+              <p>إنشاء سكريبتات فيديو احترافية بالذكاء الاصطناعي</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="generator-form">
+              <div className="mb-3">
+                <label htmlFor="idea" className="form-label d-flex align-items-center gap-2 fw-semibold">
+                  <FaLightbulb /> فكرة الفيديو
+                </label>
+                <textarea
+                  id="idea"
+                  className="form-control"
+                  value={idea}
+                  onChange={(e) => setIdea(e.target.value)}
+                  placeholder="مثال: فيديو عن الفواكه تتحدث وتعطي فوائد وأضرار تناولها"
+                  rows="4"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <label htmlFor="numberOfScripts" className="form-label d-flex align-items-center gap-2 fw-semibold">
+                    <FaHashtag /> عدد السكريبتات
+                  </label>
+                  <input
+                    type="number"
+                    id="numberOfScripts"
+                    className="form-control"
+                    value={numberOfScripts}
+                    onChange={handleNumberChange}
+                    min="1"
+                    max="10"
+                    disabled={loading}
+                    required
+                  />
+                  <small className="form-text text-muted">من 1 إلى 10 سكريبتات</small>
+                </div>
+
+                <div className="col-md-6">
+                  <ModelSelector
+                    selectedProvider={selectedProvider}
+                    selectedModel={selectedModel}
+                    onProviderChange={(e) => setSelectedProvider(e.target.value)}
+                    onModelChange={(e) => setSelectedModel(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="alert alert-danger" role="alert">
+                  ❌ {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg w-100 generate-button"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    جاري الإنشاء...
+                  </>
+                ) : (
+                  <>
+                    <FaMagic /> إنشاء السكريبتات
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
 
           {scripts.length > 0 && (
             <section className="scripts-container">

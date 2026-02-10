@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FaRobot, FaServer } from 'react-icons/fa';
 import { LLM_CONFIG, getAllProviders, getModelsForProvider } from '../../config/LLMConfig.js';
 
@@ -10,18 +10,10 @@ const ModelSelector = ({
     disabled = false
 }) => {
     const [providers] = useState(getAllProviders());
-    const [models, setModels] = useState([]);
-
-    // Update models when provider changes
-    useEffect(() => {
-        const providerModels = getModelsForProvider(selectedProvider);
-        setModels(providerModels);
-    }, [selectedProvider]);
+    const models = useMemo(() => getModelsForProvider(selectedProvider), [selectedProvider]);
 
     const handleProviderChange = (e) => {
         const newProvider = e.target.value;
-        const providerModels = getModelsForProvider(newProvider);
-
         const defaultModel = LLM_CONFIG.providers[newProvider].defaultModel;
 
         if (onProviderChange) {
@@ -34,11 +26,11 @@ const ModelSelector = ({
     };
 
     return (
-        <div className="model-selector-container">
+        <div className="row g-3">
             {/* Provider Selector */}
-            <div className="form-group mb-3">
+            <div className="col-md-6">
                 <label htmlFor="provider" className="form-label d-flex align-items-center gap-2 fw-semibold">
-                    <FaServer className="text-primary" /> مزود الخدمة (Provider)
+                    <FaServer className="text-primary" /> مزود الخدمة
                 </label>
                 <select
                     id="provider"
@@ -53,13 +45,13 @@ const ModelSelector = ({
                         </option>
                     ))}
                 </select>
-                <small className="form-text text-muted">اختر مزود خدمة الذكاء الاصطناعي</small>
+                <small className="form-text text-muted">اختر مزود الخدمة</small>
             </div>
 
             {/* Model Selector */}
-            <div className="form-group">
+            <div className="col-md-6">
                 <label htmlFor="model" className="form-label d-flex align-items-center gap-2 fw-semibold">
-                    <FaRobot className="text-primary" /> نموذج الذكاء الاصطناعي
+                    <FaRobot className="text-primary" /> النموذج
                 </label>
                 <select
                     id="model"
@@ -75,7 +67,7 @@ const ModelSelector = ({
                     ))}
                 </select>
                 <small className="form-text text-muted">
-                    اختر النموذج المناسب من {LLM_CONFIG.providers[selectedProvider]?.name}
+                    اختر النموذج من {LLM_CONFIG.providers[selectedProvider]?.name}
                 </small>
             </div>
         </div>
