@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaHistory, FaTimes, FaTrash, FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
+import { success, fail, warning, confirm } from '../services/SwalHelper.js';
 import { generateAdviceScript } from '../services/LLMService.js';
 import { LLM_CONFIG } from '../config/LLMConfig.js';
 import ModelSelector from '../components/js/ModelSelector.jsx';
@@ -17,7 +18,6 @@ const AdvicesPage = () => {
   const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
   const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const loadHistory = async () => {
     try {
@@ -25,6 +25,7 @@ const AdvicesPage = () => {
       setHistory(ideas);
     } catch (error) {
       console.error('Failed to load history:', error);
+      fail('خطأ', 'فشل في تحميل السجل');
     }
   };
 
@@ -35,21 +36,21 @@ const AdvicesPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!idea.trim()) {
-      setError('الرجاء إدخال فكرة الفيديو');
+      warning('تنبيه', 'الرجاء إدخال فكرة الفيديو');
       return;
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       const generatedScripts = await generateAdviceScript(idea, numberOfScripts, selectedProvider, selectedModel);
       setScripts(generatedScripts);
       setCurrentIdea(idea);
       setShowHistory(false);
+      success('تم الإنشاء بنجاح!', 'تم إنشاء السكريبتات بنجاح');
     } catch (err) {
       console.error('Error generating scripts:', err);
-      setError(err.message || 'حدث خطأ أثناء إنشاء السكريبتات');
+      fail('خطأ', err.message || 'حدث خطأ أثناء إنشاء السكريبتات');
     } finally {
       setLoading(false);
     }
@@ -67,7 +68,9 @@ const AdvicesPage = () => {
   };
 
   const handleDeleteIdea = async (ideaId) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذه الفكرة؟')) {
+    const confirmed = await confirm('تأكيد الحذف', 'هل أنت متأكد من حذف هذه الفكرة؟', 'نعم، احذف', 'إلغاء');
+
+    if (!confirmed) {
       return;
     }
 
@@ -84,9 +87,11 @@ const AdvicesPage = () => {
         }
         return prevScripts;
       });
+
+      success('تم الحذف', 'تم حذف الفكرة بنجاح');
     } catch (error) {
       console.error('Failed to delete idea:', error);
-      alert('حدث خطأ أثناء الحذف');
+      fail('خطأ', 'حدث خطأ أثناء الحذف');
     }
   };
 
@@ -225,12 +230,6 @@ const AdvicesPage = () => {
                   />
                 </div>
               </div>
-
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  ❌ {error}
-                </div>
-              )}
 
               <button
                 type="submit"

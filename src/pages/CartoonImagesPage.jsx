@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaMagic, FaLightbulb, FaHashtag } from 'react-icons/fa';
+import { success, fail, warning } from '../services/SwalHelper.js';
 import { generateImagePrompts } from '../services/LLMService.js';
 import { LLM_CONFIG } from '../config/LLMConfig.js';
 import ModelSelector from '../components/js/ModelSelector.jsx';
@@ -15,24 +16,23 @@ const CartoonImagesPage = () => {
     const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
     const [cartoonType, setCartoonType] = useState('human');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!idea.trim()) {
-            setError('الرجاء إدخال فكرة الصورة');
+            warning('تنبيه', 'الرجاء إدخال فكرة الصورة');
             return;
         }
 
         setLoading(true);
-        setError(null);
 
         try {
             const generatedImages = await generateImagePrompts(idea, numberOfImages, selectedProvider, selectedModel, cartoonType);
             setImages(generatedImages);
+            success('تم الإنشاء بنجاح!', 'تم إنشاء البرومبتات بنجاح');
         } catch (err) {
             console.error('Error generating image prompts:', err);
-            setError(err.message || 'حدث خطأ أثناء إنشاء البرومبتات');
+            fail('خطأ', err.message || 'حدث خطأ أثناء إنشاء البرومبتات');
         } finally {
             setLoading(false);
         }
@@ -116,12 +116,6 @@ const CartoonImagesPage = () => {
                                 />
                             </div>
                         </div>
-
-                        {error && (
-                            <div className="alert alert-danger d-flex align-items-center animate-shake" role="alert">
-                                <span>❌ {error}</span>
-                            </div>
-                        )}
 
                         <button
                             type="submit"

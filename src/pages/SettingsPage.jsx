@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaCheck } from 'react-icons/fa';
+import { success, fail, warning } from '../services/SwalHelper.js';
 import { setConfig, getConfig } from '../services/firebaseService';
 import '../components/css/SettingsPage.scss';
 
@@ -10,8 +11,6 @@ const SettingsPage = () => {
     const [loadingChatanywhere, setLoadingChatanywhere] = useState(false);
     const [saved, setSaved] = useState(false);
     const [savedChatanywhere, setSavedChatanywhere] = useState(false);
-    const [error, setError] = useState('');
-    const [errorChatanywhere, setErrorChatanywhere] = useState('');
 
     useEffect(() => {
         const loadTokens = async () => {
@@ -27,6 +26,7 @@ const SettingsPage = () => {
                 }
             } catch (err) {
                 console.error('Error loading tokens:', err);
+                fail('Error', 'Failed to load tokens');
             }
         };
 
@@ -35,23 +35,23 @@ const SettingsPage = () => {
 
     const handleSave = async () => {
         if (!openRouterToken.trim()) {
-            setError('Please enter a token');
+            warning('Warning', 'Please enter a token');
             return;
         }
 
         setLoading(true);
-        setError('');
         setSaved(false);
 
         try {
             await setConfig('openRouterToken', openRouterToken);
             setSaved(true);
+            success('Success', 'Token saved successfully!');
 
             setTimeout(() => {
                 setSaved(false);
             }, 3000);
         } catch (err) {
-            setError(err.message || 'Failed to save token');
+            fail('Error', err.message || 'Failed to save token');
         } finally {
             setLoading(false);
         }
@@ -59,23 +59,23 @@ const SettingsPage = () => {
 
     const handleSaveChatanywhere = async () => {
         if (!chatanywhereToken.trim()) {
-            setErrorChatanywhere('Please enter a token');
+            warning('Warning', 'Please enter a token');
             return;
         }
 
         setLoadingChatanywhere(true);
-        setErrorChatanywhere('');
         setSavedChatanywhere(false);
 
         try {
             await setConfig('chatanywhereToken', chatanywhereToken);
             setSavedChatanywhere(true);
+            success('Success', 'ChatAnywhere token saved successfully!');
 
             setTimeout(() => {
                 setSavedChatanywhere(false);
             }, 3000);
         } catch (err) {
-            setErrorChatanywhere(err.message || 'Failed to save token');
+            fail('Error', err.message || 'Failed to save token');
         } finally {
             setLoadingChatanywhere(false);
         }
@@ -132,18 +132,6 @@ const SettingsPage = () => {
                                     )}
                                 </button>
                             </div>
-
-                            {error && (
-                                <div className="error-message">
-                                    {error}
-                                </div>
-                            )}
-
-                            {saved && (
-                                <div className="success-message">
-                                    Token saved successfully!
-                                </div>
-                            )}
                         </div>
 
                         <div className="setting-item">
@@ -185,18 +173,6 @@ const SettingsPage = () => {
                                     )}
                                 </button>
                             </div>
-
-                            {errorChatanywhere && (
-                                <div className="error-message">
-                                    {errorChatanywhere}
-                                </div>
-                            )}
-
-                            {savedChatanywhere && (
-                                <div className="success-message">
-                                    ChatAnywhere token saved successfully!
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

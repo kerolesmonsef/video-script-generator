@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { FaMagic, FaBook, FaHashtag } from 'react-icons/fa';
-import { generateVideoStory } from '../services/LLMService.js';
+import { FaMagic, FaBook, FaHashtag, FaCopy, FaCog } from 'react-icons/fa';
+import { success, fail, warning } from '../services/SwalHelper.js';
+import { generateVideoStory, videoStoryPrompt } from '../services/scripts/videoStoryService.js';
 import { LLM_CONFIG } from '../config/LLMConfig.js';
+import { saveIdea } from '../services/firebaseService.js';
+import { findValue } from '../services/helpers.js';
 import ModelSelector from '../components/js/ModelSelector.jsx';
 import CharacterCard from '../components/js/CharacterCard.jsx';
 import EnvironmentCard from '../components/js/EnvironmentCard.jsx';
@@ -14,26 +17,43 @@ const VideoStoryPage = () => {
     const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
     const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [storyData, setStoryData] = useState(null);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [jsonInput, setJsonInput] = useState('');
+
+    const handleCopyPrompt = async () => {
+        if (!idea.trim()) {
+            warning('تنبيه', 'الرجاء إدخال فكرة القصة');
+            return;
+        }
+
+        try {
+            const prompt = videoStoryPrompt(idea, numberOfScenes);
+            await navigator.clipboard.writeText(prompt);
+            success('تم النسخ بنجاح!', 'تم نسخ البرومبت إلى الحافظة');
+        } catch (err) {
+            console.error('Error copying prompt:', err);
+            fail('خطأ', 'فشل في نسخ البرومبت');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!idea.trim()) {
-            setError('الرجاء إدخال فكرة القصة');
+            warning('تنبيه', 'الرجاء إدخال فكرة القصة');
             return;
         }
 
         setLoading(true);
-        setError(null);
         setStoryData(null);
 
         try {
             const generatedStory = await generateVideoStory(idea, numberOfScenes, selectedProvider, selectedModel);
             setStoryData(generatedStory);
+            success('تم الإنشاء بنجاح!', 'تم إنشاء القصة بنجاح');
         } catch (err) {
             console.error('Error generating story:', err);
-            setError(err.message || 'حدث خطأ أثناء إنشاء القصة');
+            fail('خطأ', err.message || 'حدث خطأ أثناء إنشاء القصة');
         } finally {
             setLoading(false);
         }
@@ -42,6 +62,137 @@ const VideoStoryPage = () => {
     const handleNumberChange = (e) => {
         const value = parseInt(e.target.value) || 1;
         setNumberOfScenes(value);
+    };
+
+    const handleJsonSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!jsonInput.trim()) {
+            warning('تنبيه', 'الرجاء إدخال بيانات JSON');
+            return;
+        }
+
+        try {
+            const parsedData = JSON.parse(jsonInput);
+
+            // Extract data similar to generateVideoStory
+            let characters = findValue(parsedData, [
+                'characters', 'Characters', 'الشخصيات', 'شخصيات', 'cast', 'Cast'
+            ]) || [];
+
+            let environments = findValue(parsedData, [
+                'environments', 'Environments', 'البيئات', 'بيئات', 'locations', 'Locations', 'الأماكن', 'أماكن'
+            ]) || [];
+
+            let scenes = findValue(parsedData, [
+                'scenes', 'Scenes', 'المشاهد', 'مشاهد', 'story', 'Story'
+            ]) || [];
+
+            if (!Array.isArray(characters) || characters.length === 0) {
+                throw new Error('لم يتم العثور على الشخصيات في JSON');
+            }
+
+            if (!Array.isArray(scenes) || scenes.length === 0) {
+                throw new Error('لم يتم العثور على المشاهد في JSON');
+            }
+
+            if (!Array.isArray(environments)) {
+                environments = [];
+            }
+
+            const validCharacters = characters.map(char => {
+                return {
+                    name: findValue(char, ['name', 'Name', 'الاسم', 'اسم']) || '',
+                    description: findValue(char, ['description', 'Description', 'الوصف', 'وصف']) || '',
+                    role: findValue(char, ['role', 'Role', 'الدور', 'دور']) || '',
+                    characterImagePrompt: findValue(char, [
+                        'characterImagePrompt',
+                        'character_image_prompt',
+                        'CharacterImagePrompt',
+                        'imagePrompt',
+                        'image_prompt',
+                        'promptالصورة',
+                        'برومبت_الصورة'
+                    ]) || ''
+                };
+            });
+
+            const validEnvironments = environments.map(env => {
+                return {
+                    id: findValue(env, ['id', 'Id', 'ID', 'المعرف', 'معرف']) || '',
+                    name: findValue(env, ['name', 'Name', 'الاسم', 'اسم']) || '',
+                    description: findValue(env, ['description', 'Description', 'الوصف', 'وصف']) || '',
+                    mood: findValue(env, ['mood', 'Mood', 'atmosphere', 'Atmosphere', 'المزاج', 'مزاج']) || '',
+                    lightingType: findValue(env, ['lightingType', 'lighting_type', 'LightingType', 'lighting', 'نوع_الإضاءة', 'إضاءة']) || '',
+                    environmentPrompt: findValue(env, [
+                        'environmentPrompt',
+                        'environment_prompt',
+                        'EnvironmentPrompt',
+                        'prompt',
+                        'برومبت_البيئة',
+                        'برومبت_المكان'
+                    ]) || ''
+                };
+            });
+
+            const validScenes = scenes.map(scene => {
+                return {
+                    sceneNumber: findValue(scene, ['sceneNumber', 'scene_number', 'SceneNumber', 'number', 'رقم_المشهد', 'رقم']) || 0,
+                    characters: findValue(scene, ['characters', 'Characters', 'الشخصيات', 'شخصيات']) || [],
+                    visualDescription: findValue(scene, ['visualDescription', 'visual_description', 'VisualDescription', 'visual', 'الوصف_البصري', 'وصف_بصري']) || '',
+                    dialogue: findValue(scene, ['dialogue', 'Dialogue', 'text', 'الحوار', 'حوار', 'النص']) || '',
+                    sceneImagePrompt: findValue(scene, [
+                        'sceneImagePrompt',
+                        'scene_image_prompt',
+                        'SceneImagePrompt',
+                        'imagePrompt',
+                        'image_prompt',
+                        'promptالصورة',
+                        'برومبت_المشهد'
+                    ]) || '',
+                    grokPrompt: findValue(scene, [
+                        'grokPrompt',
+                        'grok_prompt',
+                        'GrokPrompt',
+                        'videoPrompt',
+                        'video_prompt',
+                        'actionDescription',
+                        'action_description'
+                    ]) || ''
+                };
+            });
+
+            const generatedStory = {
+                characters: validCharacters,
+                environments: validEnvironments,
+                scenes: validScenes
+            };
+
+            setStoryData(generatedStory);
+
+            // Save to Firebase without awaiting
+            saveIdea({
+                collection: 'videoStories',
+                model: {
+                    characters,
+                    environments,
+                    scenes,
+                    provider: selectedProvider,
+                    model: selectedModel
+                }
+            }).then(() => {
+                console.log('✅ Video story saved to Firebase');
+            }).catch(error => {
+                console.warn('⚠️ Failed to save video story to Firebase:', error);
+            });
+
+            success('تم الإنشاء بنجاح!', 'تم معالجة JSON وعرض القصة');
+            setShowAdvanced(false);
+            setJsonInput('');
+        } catch (err) {
+            console.error('Error processing JSON:', err);
+            fail('خطأ', err.message || 'فشل في معالجة JSON. تأكد من صحة البيانات');
+        }
     };
 
     return (
@@ -106,29 +257,96 @@ const VideoStoryPage = () => {
                                 </div>
                             </div>
 
-                            {error && (
-                                <div className="alert alert-danger" role="alert">
-                                    ❌ {error}
-                                </div>
-                            )}
+                            <div className="d-flex gap-2">
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary btn-lg flex-grow-1 generate-button"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <span className="spinner"></span>
+                                            جاري الإنشاء...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaMagic /> إنشاء القصة
+                                        </>
+                                    )}
+                                </button>
 
-                            <button
-                                type="submit"
-                                className="btn btn-primary btn-lg w-100 generate-button"
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <>
-                                        <span className="spinner"></span>
-                                        جاري الإنشاء...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaMagic /> إنشاء القصة
-                                    </>
-                                )}
-                            </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-lg"
+                                    onClick={handleCopyPrompt}
+                                    disabled={loading}
+                                    title="نسخ البرومبت"
+                                >
+                                    <FaCopy /> نسخ البرومبت
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-info btn-lg"
+                                    onClick={() => setShowAdvanced(!showAdvanced)}
+                                    title="اعدادات متقدمة"
+                                >
+                                    <FaCog />
+                                </button>
+                            </div>
                         </form>
+
+                        {showAdvanced && (
+                            <div className="advanced-settings-section mt-4">
+                                <div className="card border-info">
+                                    <div className="card-header bg-info text-white">
+                                        <h5 className="mb-0">
+                                            <FaCog /> إعدادات متقدمة
+                                        </h5>
+                                    </div>
+                                    <div className="card-body">
+                                        <form onSubmit={handleJsonSubmit}>
+                                            <div className="mb-3">
+                                                <label htmlFor="jsonInput" className="form-label fw-semibold">
+                                                    القصة JSON
+                                                </label>
+                                                <textarea
+                                                    id="jsonInput"
+                                                    className="form-control font-monospace"
+                                                    value={jsonInput}
+                                                    onChange={(e) => setJsonInput(e.target.value)}
+                                                    placeholder='{"characters": [...], "environments": [...], "scenes": [...]}'
+                                                    rows="10"
+                                                    style={{ fontSize: '0.9rem' }}
+                                                />
+                                                <small className="form-text text-muted">
+                                                    الصق بيانات JSON كاملة تحتوي على characters و environments و scenes
+                                                </small>
+                                            </div>
+
+                                            <div className="d-flex gap-2">
+                                                <button
+                                                    type="submit"
+                                                    className="btn btn-info flex-grow-1"
+                                                >
+                                                    <FaMagic /> معالجة JSON
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => {
+                                                        setShowAdvanced(false);
+                                                        setJsonInput('');
+                                                    }}
+                                                >
+                                                    إلغاء
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {storyData && (
                             <div className="story-results">
