@@ -51,6 +51,22 @@ puppeteer.use(StealthPlugin());
         await fileInput.uploadFile('/home/kero/Downloads/images/c4.png');
         console.log('✅ Image uploaded successfully!');
 
+        console.log('⏳ Waiting for textarea to appear...');
+        await page.waitForSelector('textarea[aria-label="Make a video"]', {timeout: 10000});
+        console.log('✅ Textarea found!');
+
+        console.log('⌨️ Typing into textarea...');
+        await page.type('textarea[aria-label="Make a video"]', 'Create an amazing animated video');
+        console.log('✅ Text typed successfully!');
+
+        console.log('🔍 Looking for Make video button...');
+        await page.waitForSelector('button[aria-label="Make video"]', {timeout: 5000});
+        await page.click('button[aria-label="Make video"]');
+        console.log('✅ Clicked Make video button!');
+
+        console.log('🎬 Video generation started! Waiting...');
+        // Keep browser open to observe the result
+        await page.waitForTimeout(30000);
 
     } catch (err) {
         console.error('❌ Error occurred:', err);
