@@ -38,15 +38,6 @@ const ImageCard = ({ image, index }) => {
           </div>
           <p className="prompt-text">{image.imagePrompt}</p>
         </div>
-
-        {/*<div className="image-section generated-image-section">*/}
-        {/*  <h4>🖼️ الصورة المولدة</h4>*/}
-        {/*  <CloudflareTextToImage*/}
-        {/*    prompt={image.imagePrompt}*/}
-        {/*    width={1024}*/}
-        {/*    height={1024}*/}
-        {/*  />*/}
-        {/*</div>*/}
       </div>
 
       <button

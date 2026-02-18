@@ -64,7 +64,6 @@ export const LLM_CONFIG = {
 (async () => {
     LLM_CONFIG.providers[LLM_PROVIDERS.OPENROUTER].apiKey = await getConfig("openRouterToken");
     LLM_CONFIG.providers[LLM_PROVIDERS.CHATANYWHERE].apiKey = await getConfig("chatanywhereToken");
-    console.log('LLM Config initialized:', LLM_CONFIG);
 })();
 
 export const getProviderConfig = (provider = LLM_CONFIG.defaultProvider) => {

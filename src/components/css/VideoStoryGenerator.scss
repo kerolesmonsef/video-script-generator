@@ -1,4 +1,12 @@
 @use './variables' as *;
+@use './AdviceGenerator' as *;
+
+.video-story-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, var(--primary-light-gradient-start) 0%, var(--primary-light-gradient-end) 100%);
+}
 
 .video-story-generator {
     background: var(--white-95);

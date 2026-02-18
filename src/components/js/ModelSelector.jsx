@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FaRobot, FaServer } from 'react-icons/fa';
 import { LLM_CONFIG, getAllProviders, getModelsForProvider } from '../../config/LLMConfig.js';
 
@@ -12,9 +12,42 @@ const ModelSelector = ({
     const [providers] = useState(getAllProviders());
     const models = useMemo(() => getModelsForProvider(selectedProvider), [selectedProvider]);
 
+    // Load saved values from localStorage on component mount
+    useEffect(() => {
+        const savedProvider = localStorage.getItem('llm_selectedProvider');
+        const savedModel = localStorage.getItem('llm_selectedModel');
+
+        if (savedProvider && savedProvider !== selectedProvider) {
+            if (onProviderChange) {
+                onProviderChange({ target: { value: savedProvider } });
+            }
+        }
+
+        if (savedModel && savedModel !== selectedModel) {
+            if (onModelChange) {
+                onModelChange({ target: { value: savedModel } });
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (selectedProvider) {
+            localStorage.setItem('llm_selectedProvider', selectedProvider);
+        }
+    }, [selectedProvider]);
+
+    useEffect(() => {
+        if (selectedModel) {
+            localStorage.setItem('llm_selectedModel', selectedModel);
+        }
+    }, [selectedModel]);
+
     const handleProviderChange = (e) => {
         const newProvider = e.target.value;
         const defaultModel = LLM_CONFIG.providers[newProvider].defaultModel;
+
+        localStorage.setItem('llm_selectedProvider', newProvider);
+        localStorage.setItem('llm_selectedModel', defaultModel);
 
         if (onProviderChange) {
             onProviderChange(e);
@@ -25,9 +58,18 @@ const ModelSelector = ({
         }
     };
 
+    const handleModelChange = (e) => {
+        const newModel = e.target.value;
+
+        localStorage.setItem('llm_selectedModel', newModel);
+
+        if (onModelChange) {
+            onModelChange(e);
+        }
+    };
+
     return (
         <div className="row g-3">
-            {/* Provider Selector */}
             <div className="col-md-6">
                 <label htmlFor="provider" className="form-label d-flex align-items-center gap-2 fw-semibold">
                     <FaServer className="text-primary" /> مزود الخدمة
@@ -47,8 +89,6 @@ const ModelSelector = ({
                 </select>
                 <small className="form-text text-muted">اختر مزود الخدمة</small>
             </div>
-
-            {/* Model Selector */}
             <div className="col-md-6">
                 <label htmlFor="model" className="form-label d-flex align-items-center gap-2 fw-semibold">
                     <FaRobot className="text-primary" /> النموذج
@@ -57,7 +97,7 @@ const ModelSelector = ({
                     id="model"
                     className="form-select"
                     value={selectedModel}
-                    onChange={onModelChange}
+                    onChange={handleModelChange}
                     disabled={disabled}
                 >
                     {models.map((model) => (

@@ -52,7 +52,6 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
             </div>
 
             <div className="scene-card-body">
-                {/* Characters */}
                 {scene.characters && (
                     <div className="scene-field">
                         <div className="field-header">
@@ -75,8 +74,6 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
                         </p>
                     </div>
                 )}
-
-                {/* Visual Description */}
                 <div className="scene-field">
                     <div className="field-header">
                         <label>🎬 الوصف البصري</label>
@@ -90,8 +87,6 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
                     </div>
                     <p>{scene.visualDescription}</p>
                 </div>
-
-                {/* Dialogue */}
                 <div className="scene-field dialogue-field">
                     <div className="field-header">
                         <label>🎤 الحوار</label>
@@ -105,10 +100,6 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
                     </div>
                     <p className="dialogue-text">{scene.dialogue}</p>
                 </div>
-
-
-
-                {/* Scene Image Prompt */}
                 {scene.sceneImagePrompt && (
                     <div className="scene-field">
                         <div className="field-header">
@@ -125,7 +116,6 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
                     </div>
                 )}
 
-                {/* Grok Prompt */}
                 {scene.grokPrompt && (
                     <div className="scene-field">
                         <div className="field-header">

@@ -207,7 +207,7 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
     }
 };
 
-export const generateImagePrompts = async (idea, numberOfImages, provider = LLM_CONFIG.defaultProvider, model = null, characterType = 'human_object') => {
+export const generateImagePrompts = async ({idea, provider , model , characterType} = {}) => {
     try {
         const providerConfig = getProviderConfig(provider);
         const selectedModel = model || providerConfig.defaultModel;
@@ -215,30 +215,31 @@ export const generateImagePrompts = async (idea, numberOfImages, provider = LLM_
         const characterDescriptions = {
             'human': 'A single human character with expressive features, detailed facial expressions, realistic proportions, and natural human anatomy',
             'object_as_human': 'A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose',
-            'object': 'A simple inanimate object with no human-like limbs or body parts, featuring only cute expressive eyes and a charming mouth, maintaining its original object form and structure'
+            'object': 'A simple inanimate object with no human-like limbs or body parts, featuring only cute expressive eyes and a charming mouth, maintaining its original object form and structure',
+            'animal': 'A single adorable cartoon animal character with expressive large eyes, cute facial features, natural animal proportions but with Pixar-style charm, soft fur or skin texture with realistic detail, and an endearing personality conveyed through body language and expression'
         };
         const subjectDescription = characterDescriptions[characterType];
 
         const prompt = `You are a world-class Pixar-style Art Director and Prompt Engineer.
-Task: Generate ${numberOfImages} unique image generation prompts based on the topic: "${idea}".
+Task: Generate 1 unique image generation prompt based on the topic: "${idea}".
 
 Strict Style Guidelines:
 - Style: High-end Pixar/Disney 3D animation, rendered with Octane Render for ultra-photorealistic textures.
 - Subject: ${subjectDescription}.
-- Character Design: The object should have a cute, appealing cartoon appearance with smooth, rounded features typical of Pixar characters, while maintaining clear human-like limbs and posture.
+- Character Design: The character should have a cute, appealing cartoon appearance with smooth, rounded features typical of Pixar characters.
 - Technicals: 8k resolution, vibrant balanced colors, cinematic high-fidelity detail, subsurface scattering, and dramatic cinematic lighting (key, fill, and rim light).
 - Composition: Shallow depth of field (bokeh blur) to focus on the character in a visually rich environment.
 
 Output MUST be in this exact JSON format:
 {
-  "images": [
-    {
-      "conceptTitle": "Short title in Arabic",
-      "imagePrompt": "Full detailed English prompt for Midjourney/DALL-E"
-    }
-  ]
+  "image": {
+    "conceptTitle": "Short title in Arabic",
+    "imagePrompt": "Full detailed English prompt for Midjourney/DALL-E"
+  }
 }
 No other fields (benefits, scripts, etc.) are allowed.`;
+
+        console.log("image prompt",{imagePrompt: prompt});
 
         const completion = await getOpenAIClient(provider).chat.completions.create({
             model: selectedModel,
@@ -257,26 +258,25 @@ No other fields (benefits, scripts, etc.) are allowed.`;
         });
 
         const aiResponse = JSON.parse(completion.choices[0].message.content);
-        const images = aiResponse.images;
+        const image = aiResponse.image;
 
-        // Save to Firebase
         try {
             await saveIdea({
                 collection: 'imagePrompts',
                 model: {
                     idea,
-                    numberOfImages,
-                    images,
+                    image,
+                    characterType,
                     provider,
                     model: selectedModel
                 }
             });
-            console.log('✅ Image prompts saved to Firebase');
+            console.log('✅ Image prompt saved to Firebase');
         } catch (error) {
-            console.warn('⚠️ Failed to save image prompts to Firebase:', error);
+            console.warn('⚠️ Failed to save image prompt to Firebase:', error);
         }
 
-        return images;
+        return image;
 
     } catch (error) {
         console.error('❌ Error generating image prompts:', error);

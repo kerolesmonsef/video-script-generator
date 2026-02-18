@@ -9,6 +9,7 @@ import {
   query,
   orderBy,
   limit,
+  startAfter,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
@@ -27,7 +28,6 @@ export const saveIdea = async (config = {}) => {
       createdAt: new Date().toISOString()
     });
 
-    console.log(`Data saved successfully to ${collectionName} with ID:`, docRef.id);
     return docRef.id;
   } catch (error) {
     console.error('Error saving data to Firestore:', error);
@@ -39,27 +39,38 @@ export const saveIdea = async (config = {}) => {
 
 export const getIdeas = async (config = {}) => {
 
-  const { collection: collectionName = COLLECTION_NAME, maxResults = 20 } = config;
+  const { collection: collectionName = COLLECTION_NAME, maxResults = 20, lastDoc = null } = config;
 
   try {
-    const q = query(
-      collection(db, collectionName),
-      orderBy('timestamp', 'desc'),
-      limit(maxResults)
-    );
+    let q;
+    if (lastDoc) {
+      q = query(
+        collection(db, collectionName),
+        orderBy('timestamp', 'desc'),
+        startAfter(lastDoc),
+        limit(maxResults)
+      );
+    } else {
+      q = query(
+        collection(db, collectionName),
+        orderBy('timestamp', 'desc'),
+        limit(maxResults)
+      );
+    }
 
     const querySnapshot = await getDocs(q);
     const ideas = [];
+    let lastVisible = null;
 
     querySnapshot.forEach((doc) => {
       ideas.push({
         id: doc.id,
         ...doc.data()
       });
+      lastVisible = doc;
     });
 
-    console.log(`Loaded ${ideas.length} items from ${collectionName}`);
-    return ideas;
+    return { ideas, lastDoc: lastVisible, hasMore: ideas.length === maxResults };
   } catch (error) {
     console.error('Error getting data from Firestore:', error);
     throw new Error('فشل في تحميل البيانات: ' + error.message);
@@ -73,7 +84,6 @@ export const deleteIdea = async (config = {}) => {
 
   try {
     await deleteDoc(doc(db, collectionName, ideaId));
-    console.log(`Document deleted successfully from ${collectionName}:`, ideaId);
   } catch (error) {
     console.error('Error deleting data from Firestore:', error);
     throw new Error('فشل في حذف البيانات: ' + error.message);
@@ -93,7 +103,6 @@ export const setConfig = async (key, value) => {
       createdAt: new Date().toISOString()
     });
 
-    console.log(`Config saved successfully: ${key}`);
   } catch (error) {
     console.error('Error saving config to Firestore:', error);
     throw new Error('فشل في حفظ الإعدادات: ' + error.message);
@@ -109,10 +118,8 @@ export const getConfig = async (key) => {
 
     if (docSnap.exists()) {
       const value = docSnap.data().value;
-      console.log(`Config loaded: ${key} : value is ${value}`);
       return value;
     } else {
-      console.log(`Config not found: ${key}`);
       return null;
     }
   } catch (error) {

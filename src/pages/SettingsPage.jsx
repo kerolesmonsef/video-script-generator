@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSave, FaCheck } from 'react-icons/fa';
 import { success, fail, warning } from '../services/SwalHelper.js';
 import { setConfig, getConfig } from '../services/firebaseService';
+import Footer from '../components/js/Footer.jsx';
 import '../components/css/SettingsPage.scss';
 
 const SettingsPage = () => {
@@ -177,6 +178,8 @@ const SettingsPage = () => {
                     </div>
                 </div>
             </div>
+
+            <Footer />
         </div>
     );
 };

@@ -35,4 +35,25 @@ const findValue = (obj, keys) => {
     return '';
 };
 
-export {handleError, findValue};
+const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+
+    let date;
+    if (timestamp.toDate) {
+        date = timestamp.toDate();
+    } else if (timestamp instanceof Date) {
+        date = timestamp;
+    } else {
+        date = new Date(timestamp);
+    }
+
+    return date.toLocaleString('ar-SA', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+export {handleError, findValue, formatTimestamp};

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { FaMagic, FaBook, FaHashtag, FaCopy, FaCog } from 'react-icons/fa';
-import { success, fail, warning } from '../services/SwalHelper.js';
-import { generateVideoStory, videoStoryPrompt } from '../services/scripts/videoStoryService.js';
-import { LLM_CONFIG } from '../config/LLMConfig.js';
-import { saveIdea } from '../services/firebaseService.js';
-import { findValue } from '../services/helpers.js';
+import React, {useState, useEffect} from 'react';
+import {FaMagic, FaBook, FaHashtag, FaCopy, FaCog, FaHistory, FaTimes, FaTrash} from 'react-icons/fa';
+import {success, fail, warning, confirm} from '../services/SwalHelper.js';
+import {generateVideoStory, videoStoryPrompt} from '../services/scripts/videoStoryService.js';
+import {LLM_CONFIG} from '../config/LLMConfig.js';
+import {saveIdea, getIdeas, deleteIdea} from '../services/firebaseService.js';
+import {findValue, formatTimestamp} from '../services/helpers.js';
 import ModelSelector from '../components/js/ModelSelector.jsx';
 import CharacterCard from '../components/js/CharacterCard.jsx';
 import EnvironmentCard from '../components/js/EnvironmentCard.jsx';
 import SceneCard from '../components/js/SceneCard.jsx';
+import Footer from '../components/js/Footer.jsx';
 import '../components/css/VideoStoryGenerator.scss';
 
 const VideoStoryPage = () => {
@@ -20,6 +21,47 @@ const VideoStoryPage = () => {
     const [storyData, setStoryData] = useState(null);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [jsonInput, setJsonInput] = useState('');
+    const [history, setHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [currentIdea, setCurrentIdea] = useState('');
+    const [lastDoc, setLastDoc] = useState(null);
+    const [hasMore, setHasMore] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const loadHistory = async (loadMore = false) => {
+        try {
+            if (loadMore) {
+                setLoadingMore(true);
+            }
+
+            const result = await getIdeas({
+                collection: 'videoStories',
+                maxResults: 10,
+                lastDoc: loadMore ? lastDoc : null
+            });
+            console.log("videoStories", {result});
+            if (loadMore) {
+                setHistory((prev) => [...prev, ...result.ideas]);
+            } else {
+                setHistory(result.ideas);
+            }
+
+            setLastDoc(result.lastDoc);
+            setHasMore(result.hasMore);
+        } catch (error) {
+            console.error('Failed to load history:', error);
+            fail('خطأ', 'فشل في تحميل السجل');
+        } finally {
+            if (loadMore) {
+                setLoadingMore(false);
+            }
+        }
+    };
+
+    useEffect(() => {
+        loadHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleCopyPrompt = async () => {
         if (!idea.trim()) {
@@ -50,12 +92,50 @@ const VideoStoryPage = () => {
         try {
             const generatedStory = await generateVideoStory(idea, numberOfScenes, selectedProvider, selectedModel);
             setStoryData(generatedStory);
+            setCurrentIdea(idea);
+            setShowHistory(false);
+            await loadHistory(); // Refresh history
             success('تم الإنشاء بنجاح!', 'تم إنشاء القصة بنجاح');
         } catch (err) {
             console.error('Error generating story:', err);
             fail('خطأ', err.message || 'حدث خطأ أثناء إنشاء القصة');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleLoadPreviousIdea = (item) => {
+        console.log("handleLoadPreviousIdea", {item})
+        setStoryData(item);
+        setCurrentIdea(item.idea);
+        setShowHistory(false);
+    };
+
+    const handleDeleteIdea = async (ideaId) => {
+        const confirmed = await confirm('تأكيد الحذف', 'هل أنت متأكد من حذف هذه القصة؟', 'نعم، احذف', 'إلغاء');
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            await deleteIdea({collection: 'videoStories', id: ideaId});
+
+            setHistory((prev) => prev.filter((item) => item.id !== ideaId));
+
+            setStoryData((prevStory) => {
+                const deletedIdea = history.find((h) => h.id === ideaId);
+                if (deletedIdea && JSON.stringify(deletedIdea.storyData) === JSON.stringify(prevStory)) {
+                    setCurrentIdea('');
+                    return null;
+                }
+                return prevStory;
+            });
+
+            success('تم الحذف', 'تم حذف القصة بنجاح');
+        } catch (error) {
+            console.error('Failed to delete idea:', error);
+            fail('خطأ', 'حدث خطأ أثناء الحذف');
         }
     };
 
@@ -200,10 +280,71 @@ const VideoStoryPage = () => {
             <header className="app-header">
                 <div className="header-content">
                     <h1>📖 مولد قصص الفيديو</h1>
+                    <button
+                        className="history-toggle"
+                        onClick={() => setShowHistory(!showHistory)}
+                    >
+                        {showHistory ? (
+                            <>
+                                <FaTimes/> إخفاء
+                            </>
+                        ) : (
+                            <>
+                                <FaHistory/> السجل ({history.length})
+                            </>
+                        )}
+                    </button>
                 </div>
             </header>
 
             <main className="main-content">
+                {showHistory && (
+                    <aside className="history-sidebar">
+                        <h2>📜 القصص السابقة</h2>
+                        {history.length === 0 ? (
+                            <div className="empty-history">
+                                <p>لا توجد قصص سابقة</p>
+                            </div>
+                        ) : (
+                            <div className="history-list">
+                                {history.map((item) => (
+                                    <div key={item.id} className="history-item">
+                                        <div
+                                            className="history-item-content"
+                                            onClick={() => handleLoadPreviousIdea(item)}
+                                        >
+                                            <p className="history-idea">{item.idea}</p>
+                                            <div className="history-meta">
+                                                <span>🎬 {item.numberOfScenes || item.storyData?.scenes?.length || 0} مشاهد</span>
+                                                <span>⏰ {formatTimestamp(item.timestamp || item.createdAt)}</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            className="delete-button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteIdea(item.id);
+                                            }}
+                                            title="حذف"
+                                        >
+                                            <FaTrash/>
+                                        </button>
+                                    </div>
+                                ))}
+                                {hasMore && (
+                                    <button
+                                        className="btn btn-secondary w-100 mt-3"
+                                        onClick={() => loadHistory(true)}
+                                        disabled={loadingMore}
+                                    >
+                                        {loadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </aside>
+                )}
+
                 <div className="content-area">
                     <div className="video-story-generator">
                         <div className="generator-header">
@@ -213,8 +354,9 @@ const VideoStoryPage = () => {
 
                         <form onSubmit={handleSubmit} className="generator-form">
                             <div className="mb-3">
-                                <label htmlFor="idea" className="form-label d-flex align-items-center gap-2 fw-semibold">
-                                    <FaBook /> فكرة القصة
+                                <label htmlFor="idea"
+                                       className="form-label d-flex align-items-center gap-2 fw-semibold">
+                                    <FaBook/> فكرة القصة
                                 </label>
                                 <textarea
                                     id="idea"
@@ -230,8 +372,9 @@ const VideoStoryPage = () => {
 
                             <div className="row g-3 mb-3">
                                 <div className="col-md-6">
-                                    <label htmlFor="numberOfScenes" className="form-label d-flex align-items-center gap-2 fw-semibold">
-                                        <FaHashtag /> عدد المشاهد
+                                    <label htmlFor="numberOfScenes"
+                                           className="form-label d-flex align-items-center gap-2 fw-semibold">
+                                        <FaHashtag/> عدد المشاهد
                                     </label>
                                     <input
                                         type="number"
@@ -270,7 +413,7 @@ const VideoStoryPage = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <FaMagic /> إنشاء القصة
+                                            <FaMagic/> إنشاء القصة
                                         </>
                                     )}
                                 </button>
@@ -282,7 +425,7 @@ const VideoStoryPage = () => {
                                     disabled={loading}
                                     title="نسخ البرومبت"
                                 >
-                                    <FaCopy /> نسخ البرومبت
+                                    <FaCopy/> نسخ البرومبت
                                 </button>
 
                                 <button
@@ -291,7 +434,7 @@ const VideoStoryPage = () => {
                                     onClick={() => setShowAdvanced(!showAdvanced)}
                                     title="اعدادات متقدمة"
                                 >
-                                    <FaCog />
+                                    <FaCog/>
                                 </button>
                             </div>
                         </form>
@@ -301,7 +444,7 @@ const VideoStoryPage = () => {
                                 <div className="card border-info">
                                     <div className="card-header bg-info text-white">
                                         <h5 className="mb-0">
-                                            <FaCog /> إعدادات متقدمة
+                                            <FaCog/> إعدادات متقدمة
                                         </h5>
                                     </div>
                                     <div className="card-body">
@@ -317,7 +460,7 @@ const VideoStoryPage = () => {
                                                     onChange={(e) => setJsonInput(e.target.value)}
                                                     placeholder='{"characters": [...], "environments": [...], "scenes": [...]}'
                                                     rows="10"
-                                                    style={{ fontSize: '0.9rem' }}
+                                                    style={{fontSize: '0.9rem'}}
                                                 />
                                                 <small className="form-text text-muted">
                                                     الصق بيانات JSON كاملة تحتوي على characters و environments و scenes
@@ -329,7 +472,7 @@ const VideoStoryPage = () => {
                                                     type="submit"
                                                     className="btn btn-info flex-grow-1"
                                                 >
-                                                    <FaMagic /> معالجة JSON
+                                                    <FaMagic/> معالجة JSON
                                                 </button>
                                                 <button
                                                     type="button"
@@ -352,6 +495,7 @@ const VideoStoryPage = () => {
                             <div className="story-results">
                                 <div className="results-header">
                                     <h2>✨ القصة المُنشأة</h2>
+                                    {currentIdea && <p className="current-idea">{currentIdea}</p>}
                                 </div>
 
                                 {storyData.characters && storyData.characters.length > 0 && (
@@ -359,7 +503,7 @@ const VideoStoryPage = () => {
                                         <h3>👥 الشخصيات</h3>
                                         <div className="characters-grid">
                                             {storyData.characters.map((character, index) => (
-                                                <CharacterCard key={index} character={character} index={index} />
+                                                <CharacterCard key={index} character={character} index={index}/>
                                             ))}
                                         </div>
                                     </div>
@@ -370,7 +514,7 @@ const VideoStoryPage = () => {
                                         <h3>🌍 البيئات</h3>
                                         <div className="environments-grid">
                                             {storyData.environments.map((environment, index) => (
-                                                <EnvironmentCard key={index} environment={environment} index={index} />
+                                                <EnvironmentCard key={index} environment={environment} index={index}/>
                                             ))}
                                         </div>
                                     </div>
@@ -391,7 +535,7 @@ const VideoStoryPage = () => {
                                         <h3>🎬 المشاهد</h3>
                                         <div className="scenes-list">
                                             {storyData.scenes.map((scene, index) => (
-                                                <SceneCard key={index} scene={scene} index={index} />
+                                                <SceneCard key={index} scene={scene} index={index}/>
                                             ))}
                                         </div>
                                     </div>
@@ -410,10 +554,7 @@ const VideoStoryPage = () => {
                 </div>
             </main>
 
-            <footer className="app-footer">
-                <p>مولد قصص الفيديو بالذكاء الاصطناعي | Video Story Generator</p>
-                <p>created by Keroles Monsef</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
