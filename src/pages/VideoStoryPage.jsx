@@ -1,15 +1,16 @@
 import React, {useState, useEffect} from 'react';
 import {FaMagic, FaBook, FaHashtag, FaCopy, FaCog, FaHistory, FaTimes, FaTrash} from 'react-icons/fa';
 import {success, fail, warning, confirm} from '../services/SwalHelper.js';
-import {generateVideoStory, videoStoryPrompt} from '../services/scripts/videoStoryService.js';
+import {generateVideoStory, videoStoryPrompt, processJsonStory} from '../services/scripts/videoStoryService.js';
 import {LLM_CONFIG} from '../config/LLMConfig.js';
-import {saveIdea, getIdeas, deleteIdea} from '../services/firebaseService.js';
-import {findValue, formatTimestamp} from '../services/helpers.js';
+import {getIdeas, deleteIdea, updateStoryItem} from '../services/firebaseService.js';
+import {formatTimestamp} from '../services/helpers.js';
 import ModelSelector from '../components/js/ModelSelector.jsx';
 import CharacterCard from '../components/js/CharacterCard.jsx';
 import EnvironmentCard from '../components/js/EnvironmentCard.jsx';
 import SceneCard from '../components/js/SceneCard.jsx';
 import Footer from '../components/js/Footer.jsx';
+import StoryNavigation from '../components/js/StoryNavigation.jsx';
 import '../components/css/VideoStoryGenerator.scss';
 
 const VideoStoryPage = () => {
@@ -27,6 +28,7 @@ const VideoStoryPage = () => {
     const [lastDoc, setLastDoc] = useState(null);
     const [hasMore, setHasMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [currentStoryId, setCurrentStoryId] = useState(null);
 
     const loadHistory = async (loadMore = false) => {
         try {
@@ -60,7 +62,6 @@ const VideoStoryPage = () => {
 
     useEffect(() => {
         loadHistory();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleCopyPrompt = async () => {
@@ -108,7 +109,38 @@ const VideoStoryPage = () => {
         console.log("handleLoadPreviousIdea", {item})
         setStoryData(item);
         setCurrentIdea(item.idea);
+        setCurrentStoryId(item.id);
         setShowHistory(false);
+    };
+
+    const handleItemDoneChange = async (itemType, index, isDone) => {
+        if (!currentStoryId) return;
+
+        const errorMessages = {
+            scenes: 'فشل في تحديث حالة المشهد',
+            characters: 'فشل في تحديث حالة الشخصية',
+            environments: 'فشل في تحديث حالة البيئة'
+        };
+
+        try {
+            await updateStoryItem({
+                collection: 'videoStories',
+                id: currentStoryId,
+                itemType,
+                itemIndex: index,
+                done: isDone
+            });
+
+            setStoryData(prev => ({
+                ...prev,
+                [itemType]: prev[itemType].map((item, i) =>
+                    i === index ? { ...item, done: isDone } : item
+                )
+            }));
+        } catch (error) {
+            console.error(`Failed to update ${itemType} done status:`, error);
+            fail('خطأ', errorMessages[itemType] || 'فشل في تحديث الحالة');
+        }
     };
 
     const handleDeleteIdea = async (ideaId) => {
@@ -127,6 +159,7 @@ const VideoStoryPage = () => {
                 const deletedIdea = history.find((h) => h.id === ideaId);
                 if (deletedIdea && JSON.stringify(deletedIdea.storyData) === JSON.stringify(prevStory)) {
                     setCurrentIdea('');
+                    setCurrentStoryId(null);
                     return null;
                 }
                 return prevStory;
@@ -153,119 +186,15 @@ const VideoStoryPage = () => {
         }
 
         try {
-            const parsedData = JSON.parse(jsonInput);
-
-            // Extract data similar to generateVideoStory
-            let characters = findValue(parsedData, [
-                'characters', 'Characters', 'الشخصيات', 'شخصيات', 'cast', 'Cast'
-            ]) || [];
-
-            let environments = findValue(parsedData, [
-                'environments', 'Environments', 'البيئات', 'بيئات', 'locations', 'Locations', 'الأماكن', 'أماكن'
-            ]) || [];
-
-            let scenes = findValue(parsedData, [
-                'scenes', 'Scenes', 'المشاهد', 'مشاهد', 'story', 'Story'
-            ]) || [];
-
-            if (!Array.isArray(characters) || characters.length === 0) {
-                throw new Error('لم يتم العثور على الشخصيات في JSON');
-            }
-
-            if (!Array.isArray(scenes) || scenes.length === 0) {
-                throw new Error('لم يتم العثور على المشاهد في JSON');
-            }
-
-            if (!Array.isArray(environments)) {
-                environments = [];
-            }
-
-            const validCharacters = characters.map(char => {
-                return {
-                    name: findValue(char, ['name', 'Name', 'الاسم', 'اسم']) || '',
-                    description: findValue(char, ['description', 'Description', 'الوصف', 'وصف']) || '',
-                    role: findValue(char, ['role', 'Role', 'الدور', 'دور']) || '',
-                    characterImagePrompt: findValue(char, [
-                        'characterImagePrompt',
-                        'character_image_prompt',
-                        'CharacterImagePrompt',
-                        'imagePrompt',
-                        'image_prompt',
-                        'promptالصورة',
-                        'برومبت_الصورة'
-                    ]) || ''
-                };
+            const generatedStory = await processJsonStory( {
+                jsonInput,
+                selectedProvider,
+                selectedModel,
+                saveToFirebase: true
             });
-
-            const validEnvironments = environments.map(env => {
-                return {
-                    id: findValue(env, ['id', 'Id', 'ID', 'المعرف', 'معرف']) || '',
-                    name: findValue(env, ['name', 'Name', 'الاسم', 'اسم']) || '',
-                    description: findValue(env, ['description', 'Description', 'الوصف', 'وصف']) || '',
-                    mood: findValue(env, ['mood', 'Mood', 'atmosphere', 'Atmosphere', 'المزاج', 'مزاج']) || '',
-                    lightingType: findValue(env, ['lightingType', 'lighting_type', 'LightingType', 'lighting', 'نوع_الإضاءة', 'إضاءة']) || '',
-                    environmentPrompt: findValue(env, [
-                        'environmentPrompt',
-                        'environment_prompt',
-                        'EnvironmentPrompt',
-                        'prompt',
-                        'برومبت_البيئة',
-                        'برومبت_المكان'
-                    ]) || ''
-                };
-            });
-
-            const validScenes = scenes.map(scene => {
-                return {
-                    sceneNumber: findValue(scene, ['sceneNumber', 'scene_number', 'SceneNumber', 'number', 'رقم_المشهد', 'رقم']) || 0,
-                    characters: findValue(scene, ['characters', 'Characters', 'الشخصيات', 'شخصيات']) || [],
-                    visualDescription: findValue(scene, ['visualDescription', 'visual_description', 'VisualDescription', 'visual', 'الوصف_البصري', 'وصف_بصري']) || '',
-                    dialogue: findValue(scene, ['dialogue', 'Dialogue', 'text', 'الحوار', 'حوار', 'النص']) || '',
-                    sceneImagePrompt: findValue(scene, [
-                        'sceneImagePrompt',
-                        'scene_image_prompt',
-                        'SceneImagePrompt',
-                        'imagePrompt',
-                        'image_prompt',
-                        'promptالصورة',
-                        'برومبت_المشهد'
-                    ]) || '',
-                    grokPrompt: findValue(scene, [
-                        'grokPrompt',
-                        'grok_prompt',
-                        'GrokPrompt',
-                        'videoPrompt',
-                        'video_prompt',
-                        'actionDescription',
-                        'action_description'
-                    ]) || ''
-                };
-            });
-
-            const generatedStory = {
-                characters: validCharacters,
-                environments: validEnvironments,
-                scenes: validScenes
-            };
 
             setStoryData(generatedStory);
-
-            // Save to Firebase without awaiting
-            saveIdea({
-                collection: 'videoStories',
-                model: {
-                    characters,
-                    environments,
-                    scenes,
-                    provider: selectedProvider,
-                    model: selectedModel
-                }
-            }).then(() => {
-                console.log('✅ Video story saved to Firebase');
-            }).catch(error => {
-                console.warn('⚠️ Failed to save video story to Firebase:', error);
-            });
-
+            await loadHistory(); // Refresh history
             success('تم الإنشاء بنجاح!', 'تم معالجة JSON وعرض القصة');
             setShowAdvanced(false);
             setJsonInput('');
@@ -277,6 +206,14 @@ const VideoStoryPage = () => {
 
     return (
         <div className="video-story-page">
+            {storyData && (
+                <StoryNavigation
+                    hasCharacters={storyData.characters && storyData.characters.length > 0}
+                    hasEnvironments={storyData.environments && storyData.environments.length > 0}
+                    hasScenes={storyData.scenes && storyData.scenes.length > 0}
+                />
+            )}
+
             <header className="app-header">
                 <div className="header-content">
                     <h1>📖 مولد قصص الفيديو</h1>
@@ -315,7 +252,7 @@ const VideoStoryPage = () => {
                                         >
                                             <p className="history-idea">{item.idea}</p>
                                             <div className="history-meta">
-                                                <span>🎬 {item.numberOfScenes || item.storyData?.scenes?.length || 0} مشاهد</span>
+                                                <span>🎬 {item.numberOfScenes || item?.scenes?.length || 0} مشاهد</span>
                                                 <span>⏰ {formatTimestamp(item.timestamp || item.createdAt)}</span>
                                             </div>
                                         </div>
@@ -498,28 +435,6 @@ const VideoStoryPage = () => {
                                     {currentIdea && <p className="current-idea">{currentIdea}</p>}
                                 </div>
 
-                                {storyData.characters && storyData.characters.length > 0 && (
-                                    <div className="characters-section">
-                                        <h3>👥 الشخصيات</h3>
-                                        <div className="characters-grid">
-                                            {storyData.characters.map((character, index) => (
-                                                <CharacterCard key={index} character={character} index={index}/>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {storyData.environments && storyData.environments.length > 0 && (
-                                    <div className="environments-section">
-                                        <h3>🌍 البيئات</h3>
-                                        <div className="environments-grid">
-                                            {storyData.environments.map((environment, index) => (
-                                                <EnvironmentCard key={index} environment={environment} index={index}/>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
                                 {storyData.scenes && storyData.scenes.length > 0 && (
                                     <div className="scenes-section">
                                         <div>
@@ -528,18 +443,65 @@ const VideoStoryPage = () => {
                                                 {storyData.scenes.map((scene, index) => (
                                                     <li key={index}>
                                                         <strong>المشهد {index + 1}:</strong> {scene.visualDescription}
+                                                        <p>الحوار {scene.dialogue}</p>
                                                     </li>
                                                 ))}
                                             </ul>
                                         </div>
-                                        <h3>🎬 المشاهد</h3>
-                                        <div className="scenes-list">
+
+                                        {storyData.characters && storyData.characters.length > 0 && (
+                                            <div className="characters-section" id="characters">
+                                                <h3>👥 الشخصيات</h3>
+                                                <div className="characters-grid">
+                                                    {storyData.characters.map((character, index) => (
+                                                        <CharacterCard
+                                                            key={index}
+                                                            character={character}
+                                                            index={index}
+                                                            storyId={currentStoryId}
+                                                            onDoneChange={(index, isDone) => handleItemDoneChange('characters', index, isDone)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+
+                                        <div className="scenes-list" id="scenes">
+                                            <h3>🎬 المشاهد</h3>
                                             {storyData.scenes.map((scene, index) => (
-                                                <SceneCard key={index} scene={scene} index={index}/>
+                                                <SceneCard
+                                                    key={index}
+                                                    scene={scene}
+                                                    index={index}
+                                                    storyId={currentStoryId}
+                                                    onDoneChange={(index, isDone) => handleItemDoneChange('scenes', index, isDone)}
+                                                />
                                             ))}
                                         </div>
                                     </div>
                                 )}
+
+
+
+                                {storyData.environments && storyData.environments.length > 0 && (
+                                    <div className="environments-section" id="environments">
+                                        <h3>🌍 البيئات</h3>
+                                        <div className="environments-grid">
+                                            {storyData.environments.map((environment, index) => (
+                                                <EnvironmentCard
+                                                    key={index}
+                                                    environment={environment}
+                                                    index={index}
+                                                    storyId={currentStoryId}
+                                                    onDoneChange={(index, isDone) => handleItemDoneChange('environments', index, isDone)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+
                             </div>
                         )}
                     </div>

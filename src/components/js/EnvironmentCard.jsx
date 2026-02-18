@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { FaCopy, FaCheck, FaMapMarkerAlt } from 'react-icons/fa';
+import DoneToggle from './DoneToggle.jsx';
 import '../css/EnvironmentCard.scss';
 
-const EnvironmentCard = ({ environment, index }) => {
+const EnvironmentCard = ({ environment, index, storyId, onDoneChange }) => {
     const [copiedField, setCopiedField] = useState(null);
+
+    const handleDoneChange = (isDone) => {
+        if (onDoneChange) {
+            onDoneChange(index, isDone);
+        }
+    };
 
     const handleCopy = (text, fieldName) => {
         navigator.clipboard.writeText(text)
@@ -44,7 +51,12 @@ ${environment.environmentPrompt ? `برومبت البيئة: ${environment.envi
     };
 
     return (
-        <div className="environment-card">
+        <div className={`environment-card ${environment.done ? 'done-card' : 'undone-card'}`}>
+            <DoneToggle
+                isDone={environment.done || false}
+                onChange={handleDoneChange}
+                disabled={!storyId}
+            />
             <div className="environment-card-header">
                 <div className="environment-icon">
                     <FaMapMarkerAlt />

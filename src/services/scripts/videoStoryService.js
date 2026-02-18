@@ -233,6 +233,7 @@ export const generateVideoStory = async (idea, numberOfScenes, provider = LLM_CO
             await saveIdea({
                 collection: 'videoStories',
                 model: {
+                    idea,
                     characters,
                     environments,
                     scenes,
@@ -253,6 +254,91 @@ export const generateVideoStory = async (idea, numberOfScenes, provider = LLM_CO
 
     } catch (error) {
         handleError(error);
+    }
+};
+
+export const processJsonStory = async (config = {}) => {
+    const {
+        selectedProvider = LLM_CONFIG.defaultProvider,
+        selectedModel = LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel,
+        saveToFirebase = true,
+        jsonInput
+    } = config;
+
+    try {
+        const parsedData = JSON.parse(jsonInput);
+
+        const characters = parsedData.characters || [];
+        const environments = parsedData.environments || [];
+        const scenes = parsedData.scenes || [];
+
+        if (!Array.isArray(characters) || characters.length === 0) {
+            throw new Error('لم يتم العثور على الشخصيات في JSON');
+        }
+
+        if (!Array.isArray(scenes) || scenes.length === 0) {
+            throw new Error('لم يتم العثور على المشاهد في JSON');
+        }
+
+        const validCharacters = characters.map(char => ({
+            name: char.name || '',
+            description: char.description || '',
+            role: char.role || '',
+            characterImagePrompt: char.characterImagePrompt || '',
+            done: char.done !== undefined ? char.done : false
+        }));
+
+        const validEnvironments = environments.map(env => ({
+            id: env.id || '',
+            name: env.name || '',
+            description: env.description || '',
+            mood: env.mood || '',
+            lightingType: env.lightingType || '',
+            environmentPrompt: env.environmentPrompt || '',
+            done: env.done !== undefined ? env.done : false
+        }));
+
+        const validScenes = scenes.map(scene => ({
+            sceneNumber: scene.sceneNumber || 0,
+            characters: scene.characters || [],
+            visualDescription: scene.visualDescription || '',
+            dialogue: scene.dialogue || '',
+            sceneImagePrompt: scene.sceneImagePrompt || '',
+            grokPrompt: scene.grokPrompt || '',
+            done: scene.done !== undefined ? scene.done : false
+        }));
+
+        const generatedStory = {
+            characters: validCharacters,
+            environments: validEnvironments,
+            scenes: validScenes
+        };
+
+        if (saveToFirebase) {
+            try {
+                await saveIdea({
+                    collection: 'videoStories',
+                    model: {
+                        characters: validCharacters,
+                        environments: validEnvironments,
+                        scenes: validScenes,
+                        provider: selectedProvider,
+                        model: selectedModel
+                    }
+                });
+                console.log('✅ Video story saved to Firebase');
+            } catch (error) {
+                console.warn('⚠️ Failed to save video story to Firebase:', error);
+            }
+        }
+
+        return generatedStory;
+
+    } catch (err) {
+        if (err.message.includes('JSON') || err instanceof SyntaxError) {
+            throw new Error('فشل في معالجة JSON. تأكد من صحة البيانات');
+        }
+        throw err;
     }
 };
 

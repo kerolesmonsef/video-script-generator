@@ -1,6 +1,4 @@
-// Custom styles for CartoonImageGenerator (Bootstrap 5 is handling most styling)
 
-// Gradient text effect
 .gradient-text {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
@@ -8,7 +6,6 @@
     background-clip: text;
 }
 
-// Gradient button
 .gradient-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     border: none !important;
@@ -26,7 +23,6 @@
     }
 }
 
-// Animations
 @keyframes fadeIn {
     from {
         opacity: 0;

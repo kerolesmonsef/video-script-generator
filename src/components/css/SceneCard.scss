@@ -10,11 +10,30 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    position: relative;
+}
+
+.scene-card.done-card {
+    border: 3px solid #10b981;
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.1), var(--shadow-sm) var(--black-10);
+}
+
+.scene-card.undone-card {
+    border: 3px solid #ef4444;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1), var(--shadow-sm) var(--black-10);
 }
 
 .scene-card:hover {
     box-shadow: var(--shadow-md) var(--black-20);
     transform: translateY(-2px);
+}
+
+.scene-card.done-card:hover {
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2), var(--shadow-md) var(--black-20);
+}
+
+.scene-card.undone-card:hover {
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2), var(--shadow-md) var(--black-20);
 }
 
 .scene-card-header {

@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { FaCopy, FaCheck, FaUser } from 'react-icons/fa';
+import DoneToggle from './DoneToggle.jsx';
 import '../css/CharacterCard.scss';
 
-const CharacterCard = ({ character, index }) => {
+const CharacterCard = ({ character, index, storyId, onDoneChange }) => {
     const [copiedField, setCopiedField] = useState(null);
+
+    const handleDoneChange = (isDone) => {
+        if (onDoneChange) {
+            onDoneChange(index, isDone);
+        }
+    };
 
     const handleCopy = (text, fieldName) => {
         navigator.clipboard.writeText(text)
@@ -40,7 +47,12 @@ ${character.characterImagePrompt ? `برومبت الصورة: ${character.chara
     };
 
     return (
-        <div className="character-card">
+        <div className={`character-card ${character.done ? 'done-card' : 'undone-card'}`}>
+            <DoneToggle
+                isDone={character.done || false}
+                onChange={handleDoneChange}
+                disabled={!storyId}
+            />
             <div className="character-card-header">
                 <div className="character-icon">
                     <FaUser />

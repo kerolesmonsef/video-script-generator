@@ -91,6 +91,49 @@ export const deleteIdea = async (config = {}) => {
 };
 
 
+export const updateStoryItem = async (config = {}) => {
+  const {
+    collection: collectionName = COLLECTION_NAME,
+    id: storyId,
+    itemType, // 'characters', 'environments', or 'scenes'
+    itemIndex,
+    done
+  } = config;
+
+  try {
+    const docRef = doc(db, collectionName, storyId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      throw new Error('القصة غير موجودة');
+    }
+
+    const storyData = docSnap.data();
+    const items = storyData[itemType];
+
+    if (!items || !Array.isArray(items) || !items[itemIndex]) {
+      throw new Error('العنصر غير موجود');
+    }
+
+    items[itemIndex] = {
+      ...items[itemIndex],
+      done: done
+    };
+
+    await setDoc(docRef, {
+      ...storyData,
+      [itemType]: items,
+      updatedAt: serverTimestamp()
+    });
+
+    return items[itemIndex];
+  } catch (error) {
+    console.error('Error updating story item in Firestore:', error);
+    throw new Error('فشل في تحديث البيانات: ' + error.message);
+  }
+};
+
+
 
 export const setConfig = async (key, value) => {
 

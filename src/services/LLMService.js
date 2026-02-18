@@ -207,18 +207,42 @@ IMPORTANT: Ensure 'voiceText' is in EGYPTIAN ARABIC. Ensure 'imagePrompt' is in 
     }
 };
 
-export const generateImagePrompts = async ({idea, provider , model , characterType} = {}) => {
+export const generateImagePrompts = async ({idea, provider , model , characterType, characterEmotionalStyle = 'normal'} = {}) => {
     try {
         const providerConfig = getProviderConfig(provider);
         const selectedModel = model || providerConfig.defaultModel;
 
+        const emotionalStyleModifiers = {
+            'cute': {
+                facialFeatures: 'expressive large eyes, cute facial features, cute expressive eyes, charming smile, adorable expression',
+                personality: 'incredibly charming and endearing, with an irresistibly cute appearance',
+                eyes: 'large glossy sparkling eyes',
+                expression: 'sweet and charming emotional expression',
+                emotionalStyleNote: 'The character should have an incredibly cute and adorable appearance with charming, endearing features that make it irresistibly appealing.',
+                emoji: 'adorable',
+            },
+            'normal': {
+                facialFeatures: 'expressive features, detailed facial expressions',
+                personality: 'with natural character presence',
+                eyes: 'expressive eyes',
+                expression: 'clear emotional expression',
+                emotionalStyleNote: '',
+                emoji: '',
+            }
+        };
+
+        const styleModifier = emotionalStyleModifiers[characterEmotionalStyle] || emotionalStyleModifiers['normal'];
+
+        // Build character descriptions with emotional style
         const characterDescriptions = {
-            'human': 'A single human character with expressive features, detailed facial expressions, realistic proportions, and natural human anatomy',
-            'object_as_human': 'A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, large glossy sparkling eyes, a charming emotional expression, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose',
-            'object': 'A simple inanimate object with no human-like limbs or body parts, featuring only cute expressive eyes and a charming mouth, maintaining its original object form and structure',
-            'animal': 'A single adorable cartoon animal character with expressive large eyes, cute facial features, natural animal proportions but with Pixar-style charm, soft fur or skin texture with realistic detail, and an endearing personality conveyed through body language and expression'
+            'human': `A single human character with ${styleModifier.facialFeatures}, realistic proportions, and natural human anatomy ${styleModifier.personality}`,
+            'object_as_human': `A single, central, anthropomorphic inanimate object related to the topic with an incredibly expressive face, ${styleModifier.eyes}, ${styleModifier.expression}, human-like arms and hands with detailed fingers, and standing upright on two legs in a natural human-like pose`,
+            'object': `A simple inanimate object with no human-like limbs or body parts, featuring only ${styleModifier.eyes} and a charming mouth, maintaining its original object form and structure`,
+            'animal': `A single ${styleModifier.emoji} cartoon animal character with ${styleModifier.facialFeatures}, natural animal proportions but with Pixar-style charm, soft fur or skin texture with realistic detail, and an ${styleModifier.emoji} personality conveyed through body language and expression`.trim()
         };
         const subjectDescription = characterDescriptions[characterType];
+
+
 
         const prompt = `You are a world-class Pixar-style Art Director and Prompt Engineer.
 Task: Generate 1 unique image generation prompt based on the topic: "${idea}".
@@ -226,7 +250,7 @@ Task: Generate 1 unique image generation prompt based on the topic: "${idea}".
 Strict Style Guidelines:
 - Style: High-end Pixar/Disney 3D animation, rendered with Octane Render for ultra-photorealistic textures.
 - Subject: ${subjectDescription}.
-- Character Design: The character should have a cute, appealing cartoon appearance with smooth, rounded features typical of Pixar characters.
+- Character Design: ${styleModifier.emotionalStyleNote} The character should have smooth, rounded features typical of Pixar characters.
 - Technicals: 8k resolution, vibrant balanced colors, cinematic high-fidelity detail, subsurface scattering, and dramatic cinematic lighting (key, fill, and rim light).
 - Composition: Shallow depth of field (bokeh blur) to focus on the character in a visually rich environment.
 
@@ -267,6 +291,7 @@ No other fields (benefits, scripts, etc.) are allowed.`;
                     idea,
                     image,
                     characterType,
+                    characterEmotionalStyle,
                     provider,
                     model: selectedModel
                 }

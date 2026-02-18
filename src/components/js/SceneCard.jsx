@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { FaCopy, FaCheck, FaUsers } from 'react-icons/fa';
+import DoneToggle from './DoneToggle.jsx';
 import '../css/SceneCard.scss';
 
-const SceneCard = ({ scene, index }) => {
+const SceneCard = ({ scene, index, storyId, onDoneChange }) => {
     const [copiedField, setCopiedField] = useState(null);
+
+    const handleDoneChange = (isDone) => {
+        if (onDoneChange) {
+            onDoneChange(index, isDone);
+        }
+    };
 
     const handleCopy = (text, fieldName) => {
         navigator.clipboard.writeText(text)
@@ -46,7 +53,12 @@ ${scene.grokPrompt ? `برومبت الفيديو (Grok): ${scene.grokPrompt}` :
     };
 
     return (
-        <div className="scene-card">
+        <div className={`scene-card ${scene.done ? 'done-card' : 'undone-card'}`}>
+            <DoneToggle
+                isDone={scene.done || false}
+                onChange={handleDoneChange}
+                disabled={!storyId}
+            />
             <div className="scene-card-header">
                 <h3>مشهد #{scene.sceneNumber || index + 1}</h3>
             </div>

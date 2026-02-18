@@ -19,6 +19,7 @@ const CartoonImagesPage = () => {
     const [selectedProvider, setSelectedProvider] = useState(LLM_CONFIG.defaultProvider);
     const [selectedModel, setSelectedModel] = useState(LLM_CONFIG.providers[LLM_CONFIG.defaultProvider].defaultModel);
     const [characterType, setCharacterType] = useState('human');
+    const [characterEmotionalStyle, setCharacterEmotionalStyle] = useState('normal');
     const [loading, setLoading] = useState(false);
     const [lastDoc, setLastDoc] = useState(null);
     const [hasMore, setHasMore] = useState(false);
@@ -73,7 +74,8 @@ const CartoonImagesPage = () => {
                 idea,
                 provider: selectedProvider,
                 model: selectedModel,
-                characterType
+                characterType,
+                characterEmotionalStyle
             });
             setImage(generatedImage);
             setCurrentIdea(idea);
@@ -219,7 +221,7 @@ const CartoonImagesPage = () => {
                             </div>
 
                             <div className="row g-3 mb-3">
-                                <div className="col-md-6">
+                                <div className="col-md-3">
                                     <label htmlFor="characterType" className="form-label fw-semibold">
                                         نوع الشخصية
                                     </label>
@@ -235,6 +237,23 @@ const CartoonImagesPage = () => {
                                         <option value="object_as_human">جماد على شكل إنسان</option>
                                         <option value="object">جماد</option>
                                         <option value="animal">حيوان</option>
+                                    </select>
+                                </div>
+
+                                <div className="col-md-3">
+                                    <label htmlFor="characterEmotionalStyle" className="form-label fw-semibold">
+                                        نمط التعابير
+                                    </label>
+                                    <select
+                                        id="characterEmotionalStyle"
+                                        className="form-select"
+                                        value={characterEmotionalStyle}
+                                        onChange={(e) => setCharacterEmotionalStyle(e.target.value)}
+                                        disabled={loading}
+                                        required
+                                    >
+                                        <option value="normal">عادي</option>
+                                        <option value="cute">لطيف (Cute)</option>
                                     </select>
                                 </div>
 
